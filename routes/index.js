@@ -7,7 +7,8 @@ router.get('/', function (req, res) {
 });
 
 router.get('/api/flags', function (req, res) {
-    res.json({ "id": 2, "name": "Koen" })
+    res.json(   { "id": 1, "name": "Koen" },
+                { "id": 2, "name": "Stéphanie" })
 });
 
 module.exports = router;
