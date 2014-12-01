@@ -9,7 +9,8 @@ router.get('/', function (req, res) {
 router.get('/api/flags', function (req, res) {
     res.json(  [ { "id": 1, "name": "Koen" },
                 { "id": 2, "name": "Stéphanie" },
-                { "id": 3, "name": "Febe" }
+                { "id": 3, "name": "Febe" },
+                { "id": 4, "name": "Randy" }
                ])
 });
 
