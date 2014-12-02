@@ -14,12 +14,44 @@ router.get('/api/flags', function (req, res) {
                ])
 });
 
-var databaseURL = "cognito:G6rzc4bal@ds055690.mongolab.com:55690/buytheworld";
-var collections = ["places"];
-var db = require("mongojs").connect(databaseURL, collections);
+var mongo = require('mongodb');
+var Server = mongo.Server,
+    Db = mongo.Db,
+    BSON = mongo.BSONPure;
 
-app.get('/getAllPlaces', function (req, res) {
+var server = new Server('ds055690.mongolab.com', 55690, { auto_reconnect: true });
+db = new Db('buytheworld', server);
+
+router.get('/getAllPlaces', function (req, res) {
+    
+    db.open(function (err, client) {
+        if (!err) {
+            client.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+                if (authErr) {
+                    return console.dir(authErr);
+                }
+                var stream = client.collection('places').find({}).stream();
+                stream.on('data', function (item) {
+                    res.writeHead(200, { 'Content-Type': 'application/json' }); // Sending data via json
+                    str = '[';
+                    stream.forEach(function (place) {
+                        str = str + '{ "name" : "' + place.name + '"},' + '\n';
+                    });
+                    str = str.trim();
+                    str = str.substring(0, str.length - 1);
+                    str = str + ']';
+                    res.end(str);
+                });
+                stream.on('end', function () {
+                    console.log("Empty!");
+                });
+            });
+
+        }
+    });
+
     res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Origin", "http://*.mongolab.com");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross           // Domain Request
     db.places.find('', function (err, places)
@@ -41,7 +73,7 @@ app.get('/getAllPlaces', function (req, res) {
     });
 });
 
-app.post('/setPlace', function (req, res) {
+router.post('/setPlace', function (req, res) {
     console.log("POST: ");
     res.header("Access-Control-Allow-Origin", "http://localhost");
     res.header("Access-Control-Allow-Methods", "GET, POST");
