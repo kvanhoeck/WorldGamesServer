@@ -74,7 +74,7 @@ router.get('/getAllPlaces', function (req, res) {
     });
 });
 
-router.post('/setPlace', function (req, res) {
+router.get('/setPlace', function (req, res) {
     console.log("setPlace");
     //res.header("Access-Control-Allow-Origin", "http://localhost");
     //res.header("Access-Control-Allow-Methods", "GET, POST");
@@ -90,7 +90,7 @@ router.post('/setPlace', function (req, res) {
         
     //    // Query in MongoDB via Mongo JS Module
     //if (err || !saved) res.end("Place not saved");
-    //    else res.end("Place saved");
+    //else res.end("Place saved");
     //});
 });
 
