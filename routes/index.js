@@ -76,23 +76,22 @@ router.get('/getAllPlaces', function (req, res) {
 
 router.post('/setPlace', function (req, res) {
     console.log("setPlace");
-    process.stdout.write("setPlace");
-    res.header("Access-Control-Allow-Origin", "http://localhost");
-    res.header("Access-Control-Allow-Methods", "GET, POST");
+    //res.header("Access-Control-Allow-Origin", "http://localhost");
+    //res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
     console.log(req.body);
     console.log(req.body.mydata);
-    var jsonData = JSON.parse(req.body.mydata);
+    //var jsonData = JSON.parse(req.body.mydata);
     
-    db.place.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
-       function (err, saved)
-    {
+    //db.place.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
+    //   function (err, saved)
+    //{
         
-        // Query in MongoDB via Mongo JS Module
-    if (err || !saved) res.end("Place not saved");
-        else res.end("Place saved");
-    });
+    //    // Query in MongoDB via Mongo JS Module
+    //if (err || !saved) res.end("Place not saved");
+    //    else res.end("Place saved");
+    //});
 });
 
 module.exports = router;
