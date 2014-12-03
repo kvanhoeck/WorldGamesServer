@@ -86,8 +86,9 @@ router.post('/setPlace', function (req, res) {
     db.places.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
        function (err, saved)
     {
- // Query in MongoDB via Mongo JS Module
-        if (err || !saved) res.end("Place not saved");
+        
+        // Query in MongoDB via Mongo JS Module
+    if (err || !saved) res.end("Place not saved");
         else res.end("Place saved");
     });
 });
