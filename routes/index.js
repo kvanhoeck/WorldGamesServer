@@ -83,7 +83,7 @@ router.post('/setPlace', function (req, res) {
     console.log(req.body.mydata);
     var jsonData = JSON.parse(req.body.mydata);
     
-    db.places.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
+    db.place.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
        function (err, saved)
     {
         
