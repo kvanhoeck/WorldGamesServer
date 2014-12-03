@@ -81,8 +81,10 @@ router.post('/setPlace', function (req, res) {
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
     console.log(req.body);
-    console.log(req.body.mydata);
-    var jsonData = JSON.parse(req.body.mydata);
+    var jsonData = JSON.parse(req.body);
+    
+    console.log("JSON:");
+    console.log(jsonData);
     
     db.place.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
        function (err, saved)
