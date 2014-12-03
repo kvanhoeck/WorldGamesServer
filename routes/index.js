@@ -71,8 +71,17 @@ router.post('/setPlace', function (req, res) {
                     console.log("Authenticated to MongoDB");
                     var places = db.collection('place');
                     console.log("Collection 'Place' is known");
-                    places.insert(req.body);
-                    res.json([{ "Code": "SAVED" }]);
+                    places.insert(req.body, function (err, inserted) {
+                        if (err) {
+                            console.log("ERROR inserting Place: " + err);
+                            res.json([{ "Code": "SAVED" }]);
+                        }
+                        else {
+                            console.log("Place well inserted");
+                            res.json([{ "Code": "SAVED" }]);
+                        }
+                    });
+                    
                 }
             });
         }
