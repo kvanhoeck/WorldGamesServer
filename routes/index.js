@@ -62,7 +62,7 @@ router.post('/setPlace', function (req, res) {
         else {
             console.log("Connected to MongoDB");
             //Authenticate after connecting
-            client.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+            db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
                 if (authErr) {
                     console.log("ERROR authenticating to MongoDB: " + err);
                     res.json([{ "Code": "Error Authentication: " + authErr }]);
