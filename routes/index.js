@@ -7,6 +7,7 @@ router.get('/', function (req, res) {
 });
 
 router.get('/api/flags', function (req, res) {
+    console.log("Getting flags...");
     res.json(  [ { "id": 1, "name": "Koen" },
                 { "id": 2, "name": "Stéphanie" },
                 { "id": 3, "name": "Febe" },
@@ -74,7 +75,8 @@ router.get('/getAllPlaces', function (req, res) {
 });
 
 router.post('/setPlace', function (req, res) {
-    console.log("POST: ");
+    console.log("setPlace");
+    process.stdout.write("setPlace");
     res.header("Access-Control-Allow-Origin", "http://localhost");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
