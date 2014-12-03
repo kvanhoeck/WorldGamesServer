@@ -15,7 +15,7 @@ router.get('/api/flags', function (req, res) {
     ]);
 });
 
-var mongo = require('mongodb');
+var MongoClient = require('mongodb').MongoClient;
 var Server = mongo.Server,
     Db = mongo.Db,
     BSON = mongo.BSONPure;
@@ -85,19 +85,32 @@ router.post('/setPlace', function (req, res) {
     console.log(req.body.name);
     var jsonData = JSON.parse(req.body);
     
-    console.log("JSON:");
-    console.log(jsonData);
-    
-    db.place.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
-       function (err, saved)
-    {
-    
-        // Query in MongoDB via Mongo JS Module
-        if (err || !saved)
-            res.json([{ "Code": "SAVED" }]);
-        else
-            res.json([{ "Code": "NOT SAVED" }]);
+    MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
+        if (err) { res.json([{ "Code": "Error making connection: " + err }]); }
+        else {
+            
+            //Authenticate after connecting
+            client.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+                if (authErr) { res.json([{ "Code": "Error Authentication: " + authErr }]); }
+                else {
+                    var places = db.collection('place');
+                    places.insert(req.body);
+                    res.json([{ "Code": "SAVED" }]);
+                }
+            });
+        }
     });
+
+    //db.places.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
+    //   function (err, saved)
+    //{
+    
+    //    // Query in MongoDB via Mongo JS Module
+    //    if (err || !saved)
+    //        res.json([{ "Code": "SAVED" }]);
+    //    else
+    //        res.json([{ "Code": "NOT SAVED" }]);
+    //});
 });
 
 
