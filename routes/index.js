@@ -69,8 +69,8 @@ router.post('/setPlace', function (req, res) {
                     
                     //Check if already added, do this by Latitude and Longitude
                     console.log("Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
-                    var placeExists = db.collection('place').findOne({ "geometry.location.lat": req.body.geometry.location.lat, "geometry.location.lng": req.body.geometry.location.lng });
-                    if (placeExists !== undefined) {
+                    var placeExists = db.collection('place').findOne({ 'geometry.location.lat': 50.849838, 'geometry.location.lng': 4.733769 });
+                    if (placeExists === undefined) {
                         db.collection('place').insert(req.body, function (err, inserted) {
                             if (err) {
                                 console.log("ERROR inserting Place: " + err);
@@ -83,7 +83,7 @@ router.post('/setPlace', function (req, res) {
                         });
                     }
                     else {
-                        console.log("Place " + res.body.geometry.location.lat + " , " + res.body.geometry.location.lng + " already exists: " + placeExists.name);
+                        console.log("Place " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng + " already exists: " + placeExists.name);
                         res.json([{ "Code": "EXISTS" }]);
                     }
                 }
