@@ -56,14 +56,22 @@ router.post('/setPlace', function (req, res) {
     var jsonData = JSON.parse(req.body);
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) { res.json([{ "Code": "Error making connection: " + err }]); }
+        if (err) {
+            console.log("ERROR connecting to MongoDB: " + err);
+            res.json([{ "Code": "Error making connection: " + err }]);
+        }
         else {
-            
+            console.log("Connected to MongoDB");
             //Authenticate after connecting
             client.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) { res.json([{ "Code": "Error Authentication: " + authErr }]); }
+                if (authErr) {
+                    console.log("ERROR authenticating to MongoDB: " + err);
+                    res.json([{ "Code": "Error Authentication: " + authErr }]);
+                }
                 else {
+                    console.log("Authenticated to MongoDB");
                     var places = db.collection('place');
+                    console.log("Collection 'Place' is known");
                     places.insert(req.body);
                     res.json([{ "Code": "SAVED" }]);
                 }
