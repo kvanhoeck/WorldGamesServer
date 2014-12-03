@@ -1,3 +1,4 @@
+@echo off
 echo.
 echo Adding all to GIT
 echo.
@@ -14,7 +15,7 @@ echo.
 echo Pushing all to Git
 echo.
 echo.
-git push origin
+git push origin 
 echo.
 echo.
 echo Pushing all to Heroku
