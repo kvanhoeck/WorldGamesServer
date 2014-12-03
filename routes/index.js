@@ -16,60 +16,30 @@ router.get('/api/flags', function (req, res) {
 });
 
 var MongoClient = require('mongodb').MongoClient;
-var Server = mongo.Server,
-    Db = mongo.Db,
-    BSON = mongo.BSONPure;
+//var Server = mongo.Server,
+//    Db = mongo.Db,
+//    BSON = mongo.BSONPure;
 
-var server = new Server('ds055690.mongolab.com', 55690, { auto_reconnect: true });
-db = new Db('buytheworld', server);
+//var server = new Server('ds055690.mongolab.com', 55690, { auto_reconnect: true });
+//db = new Db('buytheworld', server);
 
 router.get('/getAllPlaces', function (req, res) {
-    
-    db.open(function (err, client) {
-        if (!err) {
-            client.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) {
-                    return console.dir(authErr);
-                }
-                var stream = client.collection('places').find({}).stream();
-                stream.on('data', function (item) {
-                    res.writeHead(200, { 'Content-Type': 'application/json' }); // Sending data via json
-                    str = '[';
-                    stream.forEach(function (place) {
-                        str = str + '{ "name" : "' + place.name + '"},' + '\n';
-                    });
-                    str = str.trim();
-                    str = str.substring(0, str.length - 1);
-                    str = str + ']';
-                    res.end(str);
-                });
-                stream.on('end', function () {
-                    console.log("Empty!");
-                });
-            });
-
-        }
-    });
-
-    res.header("Access-Control-Allow-Origin", "http://localhost");
-    res.header("Access-Control-Allow-Origin", "http://*.mongolab.com");
-    res.header("Access-Control-Allow-Methods", "GET, POST");
-    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross           // Domain Request
-    db.places.find('', function (err, places)
-    {
-    // Query in MongoDB via Mongo JS Module
-        if (err || !places) console.log("No places found");
+    console.log("getAllPlaces GET");
+    MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
+        if (err) { res.json([{ "Code": "Error making connection: " + err }]); }
         else {
-            res.writeHead(200, { 'Content-Type': 'application/json' }); // Sending data via json
-            str = '[';
-            places.forEach(function (place) {
-                str = str + '{ "name" : "' + place.name + '"},' + '\n';
+            //Authenticate after connecting
+            client.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+                if (authErr) { res.json([{ "Code": "Error Authentication: " + authErr }]); }
+                else {
+                    var places = db.collection('place');
+                    places.find().toArray(function (err, docs) {
+                        console.log("retrieved records:");
+                        console.log(docs);
+                    });
+                    res.json(places.find());
+                }
             });
-            str = str.trim();
-            str = str.substring(0, str.length - 1);
-            str = str + ']';
-            res.end(str);
-                // Prepared the jSon Array here
         }
     });
 });
