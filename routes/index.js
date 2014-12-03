@@ -53,7 +53,6 @@ router.post('/setPlace', function (req, res) {
     console.log(req.body);
     console.log("NAME:");
     console.log(req.body.name);
-    var jsonData = JSON.parse(req.body);
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
         if (err) {
