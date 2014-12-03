@@ -1,5 +1,6 @@
 ﻿var express = require('express');
 var router = express.Router();
+var request = require('request');
 
 /* GET home page. */
 router.get('/', function (req, res) {
@@ -16,12 +17,6 @@ router.get('/api/flags', function (req, res) {
 });
 
 var MongoClient = require('mongodb').MongoClient;
-//var Server = mongo.Server,
-//    Db = mongo.Db,
-//    BSON = mongo.BSONPure;
-
-//var server = new Server('ds055690.mongolab.com', 55690, { auto_reconnect: true });
-//db = new Db('buytheworld', server);
 
 router.get('/getAllPlaces', function (req, res) {
     console.log("getAllPlaces GET");
@@ -92,5 +87,68 @@ router.post('/setPlace', function (req, res) {
     });
 });
 
+router.get('/getPlace', function (req, res) {
+    console.log("setPlace POST");
+    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
+        if (err) {
+            console.log("ERROR connecting to MongoDB: " + err);
+            res.json([{ "Code": "ERROR_CONNECTING" }]);
+        }
+        else {
+            console.log("Connected to MongoDB");
+            //Authenticate after connecting
+            db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+                if (authErr) {
+                    console.log("ERROR authenticating to MongoDB: " + err);
+                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
+                }
+                else {
+                    console.log("Authenticated to MongoDB");
+                    
+                    //Check if already added, do this by Latitude and Longitude
+                    //console.log("Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
+                    var placeExists = db.collection('place').findOne({ "geometry.location.lat": 50.849838, "geometry.location.lng": 4.733769 });
+                    if (placeExists === undefined) {
+                        console.log("place does not exists");
+                    }
+                    else {
+                        console.log("Place exists: " + placeExists);
+                        //console.log("Place " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng + " already exists: " + placeExists.name);
+                        res.json([{ "Code": "EXISTS" }]);
+                    }
+                }
+            });
+        }
+    });
+});
+
+router.get('/getPrice', function (req, res) {
+    console.log("getPrice POST");
+    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    console.log("Searching for " + req.body.name + ' - ' + req.body.vicinity);
+    
+    request("https://www.google.be/search?hl=en&q=" + req.body.name.replace(/\s+/g, '+') + "+" + req.body.vicinity.replace(/\s+/g, '+'), function (error, response, body) {
+        if (!error) {
+            console.log("SUCCESS: " + body)
+            // <div id="resultStats">About 7.630 results
+            var searchString = 'id="resultStats">About ';
+            var resultString = body.indexOf(searchString);
+            var price = body.substring(resultString + searchString.length, body.indexOf(' ', resultString + searchString.length));
+            console.log("PRICE: " + price);
+            res.json([{ "status": "VALID", "price": price }]);
+        } else {
+            res.json([{ "status": "ERROR", "price": -1 }]);
+        }
+    });
+});
 
 module.exports = router;
