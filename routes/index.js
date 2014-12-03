@@ -50,14 +50,11 @@ router.post('/setPlace', function (req, res) {
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
-    console.log(req.body);
-    console.log("NAME:");
-    console.log(req.body.name);
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
         if (err) {
             console.log("ERROR connecting to MongoDB: " + err);
-            res.json([{ "Code": "Error making connection: " + err }]);
+            res.json([{ "Code": "ERROR_CONNECTING" }]);
         }
         else {
             console.log("Connected to MongoDB");
@@ -65,38 +62,33 @@ router.post('/setPlace', function (req, res) {
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
                 if (authErr) {
                     console.log("ERROR authenticating to MongoDB: " + err);
-                    res.json([{ "Code": "Error Authentication: " + authErr }]);
+                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
                 }
                 else {
                     console.log("Authenticated to MongoDB");
-                    var places = db.collection('place');
-                    console.log("Collection 'Place' is known");
-                    places.insert(req.body, function (err, inserted) {
-                        if (err) {
-                            console.log("ERROR inserting Place: " + err);
-                            res.json([{ "Code": "SAVED" }]);
-                        }
-                        else {
-                            console.log("Place well inserted");
-                            res.json([{ "Code": "SAVED" }]);
-                        }
-                    });
                     
+                    //Check if already added, do this by Latitude and Longitude
+                    var placeExists = db.collection('place').findOne({ 'geometry.location.lat': res.body.geometry.location.lat, 'geometry.location.lng': res.body.geometry.location.lng });
+                    if (placeExists !== undefined) {
+                        db.collection('place').insert(req.body, function (err, inserted) {
+                            if (err) {
+                                console.log("ERROR inserting Place: " + err);
+                                res.json([{ "Code": "ERROR_SAVING" }]);
+                            }
+                            else {
+                                console.log("Place well inserted");
+                                res.json([{ "Code": "SAVED" }]);
+                            }
+                        });
+                    }
+                    else {
+                        console.log("Place " + res.body.geometry.location.lat + " , " + res.body.geometry.location.lng + " already exists: " + placeExists.name);
+                        res.json([{ "Code": "EXISTS" }]);
+                    }
                 }
             });
         }
     });
-
-    //db.places.save({ name: jsonData.name, lat: jsonData.geometry.location.lat, lng: jsonData.geometry.location.lng, icon: jsonData.icon, types: jsonData.types },
-    //   function (err, saved)
-    //{
-    
-    //    // Query in MongoDB via Mongo JS Module
-    //    if (err || !saved)
-    //        res.json([{ "Code": "SAVED" }]);
-    //    else
-    //        res.json([{ "Code": "NOT SAVED" }]);
-    //});
 });
 
 
