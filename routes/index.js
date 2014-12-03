@@ -68,7 +68,8 @@ router.post('/setPlace', function (req, res) {
                     console.log("Authenticated to MongoDB");
                     
                     //Check if already added, do this by Latitude and Longitude
-                    var placeExists = db.collection('place').findOne({ 'geometry.location.lat': res.body.geometry.location.lat, 'geometry.location.lng': res.body.geometry.location.lng });
+                    console.log("Searching for " + res.body.geometry.location.lat + " , " + res.body.geometry.location.lng);
+                    var placeExists = db.collection('place').findOne({ "geometry.location.lat": res.body.geometry.location.lat, "geometry.location.lng": res.body.geometry.location.lng });
                     if (placeExists !== undefined) {
                         db.collection('place').insert(req.body, function (err, inserted) {
                             if (err) {
