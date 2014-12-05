@@ -21,16 +21,30 @@ var MongoClient = require('mongodb').MongoClient;
 router.get('/getAllPlaces', function (req, res) {
     console.log("getAllPlaces GET");
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) { res.json([{ "Code": "Error making connection: " + err }]); }
+        if (err) {
+            console.log("ERROR connecting to MongoDB: " + err);
+            res.json([{ "Code": "ERROR_CONNECTING" }]);
+        }
         else {
+            console.log("Connected to MongoDB");
             //Authenticate after connecting
-            client.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) { res.json([{ "Code": "Error Authentication: " + authErr }]); }
+            db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+                if (authErr) {
+                    console.log("ERROR authenticating to MongoDB: " + err);
+                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
+                }
                 else {
+                    console.log("Authenticated to MongoDB");
                     var places = db.collection('place');
                     places.find().toArray(function (err, docs) {
-                        console.log("retrieved records:");
-                        console.log(docs);
+                        if (err) {
+                            console.log("ERROR retrieving data: " + err);
+                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                        }
+                        else {
+                            console.log("retrieved records:");
+                            console.log(docs);
+                        }
                     });
                     res.json(places.find());
                 }
@@ -64,7 +78,9 @@ router.post('/setPlace', function (req, res) {
                     
                     //Check if already added, do this by Latitude and Longitude
                     console.log("Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
-                    var placeExists = db.collection('place').findOne({ 'geometry.location.lat': 50.849838, 'geometry.location.lng': 4.733769 });
+                    var placeExists = db.collection('place').findOne({ "geometry.location.lat": req.body.geometry.location.lat }); //, 'geometry.location.lng': req.body.geometry.location.lng });
+                    //var placeExists = db.collection('place').find(); //One({ name: req.body.name });
+
                     if (placeExists === undefined) {
                         db.collection('place').insert(req.body, function (err, inserted) {
                             if (err) {
