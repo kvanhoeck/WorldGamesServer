@@ -310,6 +310,9 @@ router.get('/getMyWorld', function (req, res) {
                     var mongo = require('mongodb')
                     var BSON = mongo.BSONPure;
                     
+                    console.log("BODY:");
+                    console.log(body);
+
                     db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
                         if (err) {
                             console.log("ERROR retrieving data: " + err);
