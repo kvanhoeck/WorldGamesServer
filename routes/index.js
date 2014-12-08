@@ -283,8 +283,8 @@ router.post('/buyPlace', function (req, res) {
     });
 });
 
-router.post('/getMyWorld', function (req, res) {
-    console.log("getMyWorld POST");
+router.get('/getMyWorld', function (req, res) {
+    console.log("getMyWorld GET");
     res.header("Access-Control-Allow-Origin", "http://localhost");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
@@ -329,7 +329,7 @@ router.post('/getMyWorld', function (req, res) {
 
 
 router.get('/getPrice', function (req, res) {
-    console.log("getPrice POST");
+    console.log("getPrice GET");
     res.header("Access-Control-Allow-Origin", "http://localhost");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
