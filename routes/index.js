@@ -35,18 +35,17 @@ router.get('/getAllPlaces', function (req, res) {
                 }
                 else {
                     console.log("Authenticated to MongoDB");
-                    var places = db.collection('place');
-                    places.find().toArray(function (err, docs) {
+                    db.collection("place").find().toArray(function (err, places) {
                         if (err) {
                             console.log("ERROR retrieving data: " + err);
                             res.json([{ "Code": "ERROR_RETRIEVING" }]);
                         }
                         else {
                             console.log("retrieved records:");
-                            console.log(docs);
+                            console.log(places);
+                            res.json(places)
                         }
                     });
-                    res.json(places.find());
                 }
             });
         }
@@ -78,33 +77,41 @@ router.post('/setPlace', function (req, res) {
                     
                     //Check if already added, do this by Latitude and Longitude
                     console.log("Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
-                    var placeExists = db.collection('place').findOne({ "geometry.location.lat": req.body.geometry.location.lat }); //, 'geometry.location.lng': req.body.geometry.location.lng });
-                    //var placeExists = db.collection('place').find(); //One({ name: req.body.name });
-
-                    if (placeExists === undefined) {
-                        db.collection('place').insert(req.body, function (err, inserted) {
-                            if (err) {
-                                console.log("ERROR inserting Place: " + err);
-                                res.json([{ "Code": "ERROR_SAVING" }]);
+                    db.collection("place").findOne({ "geometry.location.lat": req.body.geometry.location.lat, 'geometry.location.lng': req.body.geometry.location.lng }, function (err, places) {
+                        //collection.find().toArray(function (err, places) {
+                        if (err) {
+                            console.log("ERROR retrieving data: " + err);
+                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                        }
+                        else {
+                            console.log("retrieved records:");
+                            console.log(places);
+                            if (places === null) {
+                                db.collection('place').insert(req.body, function (err, inserted) {
+                                    if (err) {
+                                        console.log("ERROR inserting Place: " + err);
+                                        res.json([{ "Code": "ERROR_SAVING" }]);
+                                    }
+                                    else {
+                                        console.log("Place well inserted");
+                                        res.json([{ "Code": "SAVED" }]);
+                                    }
+                                });
                             }
                             else {
-                                console.log("Place well inserted");
-                                res.json([{ "Code": "SAVED" }]);
+                                console.log("Place " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng + " already exists: " + places.name);
+                                res.json([{ "Code": "EXISTS" }]);
                             }
-                        });
-                    }
-                    else {
-                        console.log("Place " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng + " already exists: " + placeExists.name);
-                        res.json([{ "Code": "EXISTS" }]);
-                    }
+                        }
+                    });
                 }
             });
         }
     });
 });
 
-router.get('/getPlace', function (req, res) {
-    console.log("setPlace POST");
+router.post('/setUser', function (req, res) {
+    console.log("setUser POST");
     res.header("Access-Control-Allow-Origin", "http://localhost");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
@@ -127,21 +134,125 @@ router.get('/getPlace', function (req, res) {
                     console.log("Authenticated to MongoDB");
                     
                     //Check if already added, do this by Latitude and Longitude
-                    //console.log("Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
-                    var placeExists = db.collection('place').findOne({ "geometry.location.lat": 50.849838, "geometry.location.lng": 4.733769 });
-                    if (placeExists === undefined) {
-                        console.log("place does not exists");
-                    }
-                    else {
-                        console.log("Place exists: " + placeExists);
-                        //console.log("Place " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng + " already exists: " + placeExists.name);
-                        res.json([{ "Code": "EXISTS" }]);
-                    }
+                    db.collection("user").findOne({ "email": req.body.email}, function (err, user) {
+                        //collection.find().toArray(function (err, places) {
+                        if (err) {
+                            console.log("ERROR retrieving data: " + err);
+                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                        }
+                        else {
+                            console.log("retrieved records:");
+                            console.log(user);
+                            if (user === null) {
+                                db.collection('user').insert(req.body, function (err, inserted) {
+                                    if (err) {
+                                        console.log("ERROR inserting User: " + err);
+                                        res.json([{ "Code": "ERROR_SAVING" }]);
+                                    }
+                                    else {
+                                        console.log("User well inserted");
+                                        res.json([{ "Code": "SAVED" }]);
+                                    }
+                                });
+                            }
+                            else {
+                                console.log("User " + req.body.firstname + " " + req.body.lastname + " already exists: ");
+                                res.json([{ "Code": "EXISTS" }]);
+                            }
+                        }
+                    });
                 }
             });
         }
     });
 });
+
+router.post('/buyPlace', function (req, res) {
+    console.log("buyPlace POST");
+    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
+        if (err) {
+            console.log("ERROR connecting to MongoDB: " + err);
+            res.json([{ "Code": "ERROR_CONNECTING" }]);
+        }
+        else {
+            console.log("Connected to MongoDB");
+            //Authenticate after connecting
+            db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+                if (authErr) {
+                    console.log("ERROR authenticating to MongoDB: " + err);
+                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
+                }
+                else {
+                    console.log("Authenticated to MongoDB");
+                    
+                    //Check if the user exists
+                    var mongo = require('mongodb')
+                    var BSON = mongo.BSONPure;
+
+                    db.collection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId)}, function (err, user) {
+                        //collection.find().toArray(function (err, places) {
+                        if (err) {
+                            console.log("ERROR retrieving user: " + err);
+                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                        }
+                        else if (user == null) {
+                            console.log("User " + req.body.userId + " does not exists!");
+                            res.json([{ "Code": "USER_UNKNOWN" }]);
+                        }
+                        else {
+                            //User exists, check place
+                            console.log("User does exists:" + user.firstname + " " + user.lastname);
+                            db.collection("place").findOne({ "id": req.body.placeId }, function (err, place) {
+                                if (err) {
+                                    console.log("ERROR retrieving user: " + err);
+                                    res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                                }
+                                else if (place == null) {
+                                    console.log("Place " + req.body.placeId + " with type " + req.body.placeType + " does not exists!");
+                                    res.json([{ "Code": "PLACE_UNKNOWN" }]);
+                                }
+                                else {
+                                    console.log("Place does exists: " + place.name);
+                                    //Check if userPlace exists
+                                    db.collection("userPlace").findOne(req.body, function (err, userP) {
+                                        if (err) {
+                                            console.log("ERROR retrieving user: " + err);
+                                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                                        }
+                                        else if (userP == null) {
+                                            console.log("UserPlace does not exists");
+                                            //Add place to user
+                                            db.collection('userPlace').insert( req.body, function (err, inserted) {
+                                                    if (err) {
+                                                        console.log("ERROR inserting UserPlace: " + err);
+                                                        res.json([{ "Code": "ERROR_SAVING" }]);
+                                                    }
+                                                    else {
+                                                        console.log("User well inserted");
+                                                        res.json([{ "Code": "SAVED" }]);
+                                                    }
+                                            });
+                                        }
+                                        else {
+                                            console.log("userPlace does exists");
+                                            res.json([{ "Code": "ALREADY_SAVED" }]);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    });
+});
+
 
 router.get('/getPrice', function (req, res) {
     console.log("getPrice POST");
