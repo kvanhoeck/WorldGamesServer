@@ -311,7 +311,7 @@ router.get('/getMyWorld', function (req, res) {
                     var BSON = mongo.BSONPure;
                     
                     console.log("BODY:");
-                    console.log(body);
+                    console.log(req.body);
 
                     db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
                         if (err) {
