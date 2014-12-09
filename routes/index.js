@@ -186,6 +186,12 @@ router.post('/setUser', function (req, res) {
     });
 });
 
+function throwError(res, code, message){
+    console.log("ERROR: " + message);
+    res.status(code);
+    res.send(message);
+}
+
 router.post('/buyPlace', function (req, res) {
     console.log("buyPlace POST");
     res.header("Access-Control-Allow-Origin", "*");
@@ -214,6 +220,7 @@ router.post('/buyPlace', function (req, res) {
                     var BSON = mongo.BSONPure;
                     console.log("Received:");
                     console.log(req.body);
+                    throwError(res, 400, "User " + req.body.userId + " does not exists!");
 
                     db.collection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId)}, function (err, user) {
                         if (err) {
@@ -221,9 +228,10 @@ router.post('/buyPlace', function (req, res) {
                             res.json([{ "Code": "ERROR_RETRIEVING" }]);
                         }
                         else if (user == null) {
-                            console.log("User " + req.body.userId + " does not exists!");
-                            res.status(400);
-                            res.send("The user could not be found");
+                            throwError(res, 400, "User " + req.body.userId + " does not exists!");
+                            //console.log("User " + req.body.userId + " does not exists!");
+                            //res.status(400);
+                            //res.send("The user could not be found");
                         }
                         else {
                             //User exists, check place
