@@ -365,8 +365,6 @@ router.post('/getPrice', function (req, res) {
     
     request("https://www.google.be/search?hl=en&q=" + req.body.name.replace(/\s+/g, '+') + "+" + req.body.vicinity.replace(/\s+/g, '+'), function (error, response, body) {
         if (!error) {
-            console.log("SUCCESS: " + body)
-            // <div id="resultStats">About 7.630 results
             var searchString = 'id="resultStats">About ';
             var resultString = body.indexOf(searchString);
             var price = body.substring(resultString + searchString.length, body.indexOf(' ', resultString + searchString.length));
