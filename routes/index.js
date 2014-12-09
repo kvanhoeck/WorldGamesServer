@@ -310,8 +310,7 @@ router.post('/getMyWorld', function (req, res) {
                     var mongo = require('mongodb')
                     var BSON = mongo.BSONPure;
                     
-                    console.log("BODY:");
-                    console.log(req.body);
+                    console.log("Searching for " + req.body.userId);
 
                     db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
                         if (err) {
@@ -321,7 +320,8 @@ router.post('/getMyWorld', function (req, res) {
                         else {
                             console.log("retrieved records:");
                             console.log(places);
-                            res.json(places)
+                            console.log("Sending this back to requester");
+                            res.json(places);
                         }
                     });
                 }
