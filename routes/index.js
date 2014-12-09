@@ -2,6 +2,13 @@
 var router = express.Router();
 var request = require('request');
 
+function throwError(res, code, message, error) {
+    console.log("ERROR: " + message);
+    console.log("More info: " + err);
+    res.status(code);
+    res.send(message);
+}
+
 /* GET home page. */
 router.get('/', function (req, res) {
     res.render('index', { title: 'World Games Server' });
@@ -21,25 +28,16 @@ var MongoClient = require('mongodb').MongoClient;
 router.get('/getAllPlaces', function (req, res) {
     console.log("getAllPlaces GET");
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) {
-            console.log("ERROR connecting to MongoDB: " + err);
-            res.json([{ "Code": "ERROR_CONNECTING" }]);
-        }
+        if (err) throwError(res, 400, "Could not connect to the database", err);
         else {
             console.log("Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) {
-                    console.log("ERROR authenticating to MongoDB: " + err);
-                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
-                }
+                if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
                 else {
                     console.log("Authenticated to MongoDB");
                     db.collection("place").find().toArray(function (err, places) {
-                        if (err) {
-                            console.log("ERROR retrieving data: " + err);
-                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                        }
+                        if (err) throwError(res, 400, "Could not retreive Place", err);
                         else {
                             console.log("retrieved records:");
                             console.log(places);
@@ -60,18 +58,12 @@ router.post('/setPlace', function (req, res) {
     // Domain Request
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) {
-            console.log("ERROR connecting to MongoDB: " + err);
-            res.json([{ "Code": "ERROR_CONNECTING" }]);
-        }
+        if (err) throwError(res, 400, "Could not connect to the database", err);
         else {
             console.log("Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) {
-                    console.log("ERROR authenticating to MongoDB: " + err);
-                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
-                }
+                if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
                 else {
                     console.log("Authenticated to MongoDB");
                     
@@ -79,19 +71,13 @@ router.post('/setPlace', function (req, res) {
                     console.log("Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
                     db.collection("place").findOne({ "geometry.location.lat": req.body.geometry.location.lat, 'geometry.location.lng': req.body.geometry.location.lng }, function (err, places) {
                         //collection.find().toArray(function (err, places) {
-                        if (err) {
-                            console.log("ERROR retrieving data: " + err);
-                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                        }
+                        if (err) throwError(res, 400, "Could not retreive Place", err);
                         else {
                             console.log("retrieved records:");
                             console.log(places);
                             if (places === null) {
                                 db.collection('place').insert(req.body, function (err, inserted) {
-                                    if (err) {
-                                        console.log("ERROR inserting Place: " + err);
-                                        res.json([{ "Code": "ERROR_SAVING" }]);
-                                    }
+                                    if (err) throwError(res, 400, "Could not insert new Place", err);
                                     else {
                                         console.log("Place well inserted");
                                         res.json([{ "Code": "SAVED" }]);
@@ -118,53 +104,32 @@ router.post('/setUser', function (req, res) {
     // Domain Request
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) {
-            console.log("ERROR connecting to MongoDB: " + err);
-            res.json([{ "Code": "ERROR_CONNECTING" }]);
-        }
+        if (err) throwError(res, 400, "Could not connect to the database", err);
         else {
             console.log("Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) {
-                    console.log("ERROR authenticating to MongoDB: " + err);
-                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
-                }
+                if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
                 else {
                     console.log("Authenticated to MongoDB");
                     
                     //Check if already added, do this by Latitude and Longitude
                     db.collection("user").findOne({ "email": req.body.email}, function (err, user) {
                         //collection.find().toArray(function (err, places) {
-                        if (err) {
-                            console.log("ERROR retrieving data: " + err);
-                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                        }
+                        if (err) throwError(res, 400, "Could not retreive User", err);
                         else if (user == null) {
                             //Add user to DB
                             db.collection('user').insert(req.body, function (err, inserted) {
-                                if (err) {
-                                    console.log("ERROR inserting User: " + err);
-                                    res.json([{ "Code": "ERROR_SAVING" }]);
-                                }
+                                if (err) throwError(res, 400, "Could not insert new User", err);
                                 else {
                                     console.log("User well inserted");
                                     //Give user start wallet
                                     db.collection('user').findOne({ "email": req.body.email }, function (err, user) {
-                                        if (err) {
-                                            console.log("ERROR checking user: " + err);
-                                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                                        }
-                                        else if (user == null) {
-                                            console.log("ERROR: User has just been saved, but impossible to fetch");
-                                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                                        }
+                                        if (err) throwError(res, 400, "Could not retreive User", err);
+                                        else if (user == null) throwError(res, 400, "Could not retreive User", "User has just been saved, but impossible to fetch");
                                         else {
                                             db.collection('wallet').insert({ "userId": user._id, "amount": 100000}, function (err, wallet) {
-                                                if (err) {
-                                                    console.log("ERROR inserting Wallet: " + err);
-                                                    res.json([{ "Code": "ERROR_SAVING" }]);
-                                                }
+                                                if (err) throwError(res, 400, "Could not insert new Wallet", err);
                                                 else {
                                                     console.log("Wallet well inserted");
                                                     res.json([{ "Code": "SAVED" }]);
@@ -186,12 +151,6 @@ router.post('/setUser', function (req, res) {
     });
 });
 
-function throwError(res, code, message){
-    console.log("ERROR: " + message);
-    res.status(code);
-    res.send(message);
-}
-
 router.post('/buyPlace', function (req, res) {
     console.log("buyPlace POST");
     res.header("Access-Control-Allow-Origin", "*");
@@ -200,18 +159,12 @@ router.post('/buyPlace', function (req, res) {
     // Domain Request
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) {
-            console.log("ERROR connecting to MongoDB: " + err);
-            res.json([{ "Code": "ERROR_CONNECTING" }]);
-        }
+        if (err) throwError(res, 400, "Could not connect to the database", err);
         else {
             console.log("Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) {
-                    console.log("ERROR authenticating to MongoDB: " + err);
-                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
-                }
+                if (authErr) throwError(res, 400, "Could not authenticate to the database", authErr);
                 else {
                     console.log("Authenticated to MongoDB");
                     
@@ -220,55 +173,28 @@ router.post('/buyPlace', function (req, res) {
                     var BSON = mongo.BSONPure;
                     console.log("Received:");
                     console.log(req.body);
-                    throwError(res, 400, "User " + req.body.userId + " does not exists!");
 
                     db.collection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId)}, function (err, user) {
-                        if (err) {
-                            console.log("ERROR retrieving user: " + err);
-                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                        }
-                        else if (user == null) {
-                            throwError(res, 400, "User " + req.body.userId + " does not exists!");
-                            //console.log("User " + req.body.userId + " does not exists!");
-                            //res.status(400);
-                            //res.send("The user could not be found");
-                        }
+                        if (err) throwError(res, 400, "Could not retreive user", err);
+                        else if (user == null) throwError(res, 400, "User " + req.body.userId + " does not exists!", "User is null");
                         else {
                             //User exists, check place
                             console.log("User does exists:" + user.firstname + " " + user.lastname);
                             db.collection("place").findOne({ "id": req.body.placeId }, function (err, place) {
-                                if (err) {
-                                    console.log("ERROR retrieving place: " + err);
-                                    res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                                }
-                                else if (place == null) {
-                                    console.log("Place " + req.body.placeId + " with type " + req.body.placeType + " does not exists!");
-                                    res.status(400);
-                                    res.json([{ "Code": "PLACE_UNKNOWN" }]);
-                                }
+                                if (err) throwError(res, 400, "Could not retreive place", err);
+                                else if (place == null) throwError(res, 400,"The selected place does not exists", "Place " + req.body.placeId + " with type " + req.body.placeType + " does not exists!");
                                 else {
                                     console.log("Place does exists: " + place.name);
                                     //Check if userPlace exists
                                     db.collection("userPlace").findOne(req.body, function (err, userP) {
-                                        if (err) {
-                                            console.log("ERROR retrieving userPlace: " + err);
-                                            res.status(400);
-                                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                                        }
+                                        if (err) throwError(res, 400, "Could not retreive link between user and place", err);
                                         else if (userP == null) {
                                             console.log("UserPlace does not exists, checking wallet");
                                             //Check if user has enough money
                                             db.collection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) }, function (err, wallet) {
-                                                if (err) {
-                                                    console.log("ERROR retrieving wallet: " + err);
-                                                    res.status(400);
-                                                    res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                                                }
+                                                if (err) throwError(res, 400, "Could not retreive wallet", err);
                                                 else {
-                                                    if (wallet.amount < req.body.price) {
-                                                        console.log("ERROR buying, to little in wallet: " + wallet.amount + " < " + req.body.price);
-                                                        res.json([{ "Code": "ERROR_BUYING" }]);
-                                                    }
+                                                    if (wallet.amount < req.body.price) throwError(res, 400, "You do not have enough money to buy this place", "To little in wallet: " + wallet.amount + " < " + req.body.price);
                                                     else {
                                                         //Add place to user
                                                         var userPlace = [{
@@ -284,11 +210,7 @@ router.post('/buyPlace', function (req, res) {
                                                                 "lastCashedTS": new Date().getTime()
                                                             }];
                                                         db.collection('userPlace').insert(userPlace, function (err, inserted) {
-                                                            if (err) {
-                                                                console.log("ERROR inserting UserPlace: " + err);
-                                                                res.status(400);
-                                                                res.json([{ "Code": "ERROR_SAVING" }]);
-                                                            }
+                                                            if (err) throwError(res, 400, "Could not insert new link between user and place", err);
                                                             else {
                                                                 console.log("UserPlace well inserted");
                                                                 res.json([{ "Code": "SAVED" }]);
@@ -296,11 +218,7 @@ router.post('/buyPlace', function (req, res) {
                                                         });
                                                         //Substract price of wallet
                                                         db.collection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.place.price) }, function (err, wal) {
-                                                            if (err) {
-                                                                console.log("ERROR updating Wallet: " + err);
-                                                                res.status(400);
-                                                                res.json([{ "Code": "ERROR_SAVING" }]);
-                                                            }
+                                                            if (err) throwError(res, 400, "Could not update the wallet", err);
                                                             else {
                                                                 console.log("Wallet updated");
                                                                 res.json([{ "Code": "SAVED" }]);
@@ -310,11 +228,7 @@ router.post('/buyPlace', function (req, res) {
                                                 }
                                             })
                                         }
-                                        else {
-                                            console.log("userPlace does exists");
-                                            res.status(400);
-                                            res.json([{ "Code": "ALREADY_SAVED" }]);
-                                        }
+                                        else throwError(res, 400, "Could not retreive link between user and place", "userPlace does exists");
                                     });
                                 }
                             });
@@ -334,18 +248,12 @@ router.post('/getMyWorld', function (req, res) {
     // Domain Request
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) {
-            console.log("ERROR connecting to MongoDB: " + err);
-            res.json([{ "Code": "ERROR_CONNECTING" }]);
-        }
+        if (err) throwError(res, 400, "Could not connect to the database", err);
         else {
             console.log("Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) {
-                    console.log("ERROR authenticating to MongoDB: " + err);
-                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
-                }
+                if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
                 else {
                     console.log("Authenticated to MongoDB");
                     
@@ -356,10 +264,7 @@ router.post('/getMyWorld', function (req, res) {
                     console.log("Searching for " + req.body.userId);
 
                     db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
-                        if (err) {
-                            console.log("ERROR retrieving data: " + err);
-                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                        }
+                        if (err) throwError(res, 400, "Could not retreive link between user and place", err);
                         else {
                             console.log("retrieved records:");
                             console.log(places);
@@ -381,18 +286,12 @@ router.post('/getMyCapital', function (req, res) {
     // Domain Request
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) {
-            console.log("ERROR connecting to MongoDB: " + err);
-            res.json([{ "Code": "ERROR_CONNECTING" }]);
-        }
+        if (err) throwError(res, 400, "Could not connect to the database", err);
         else {
             console.log("Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) {
-                    console.log("ERROR authenticating to MongoDB: " + err);
-                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
-                }
+                if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
                 else {
                     console.log("Authenticated to MongoDB");
                     
@@ -403,10 +302,7 @@ router.post('/getMyCapital', function (req, res) {
                     console.log("Searching for " + req.body.userId);
                     
                     db.collection("wallet").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, wallet) {
-                        if (err) {
-                            console.log("ERROR retrieving data: " + err);
-                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
-                        }
+                        if (err) throwError(res, 400, "Could not retreive Wallet", err);
                         else {
                             console.log("retrieved records:");
                             console.log(wallet);
