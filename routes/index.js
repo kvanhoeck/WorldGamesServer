@@ -1,10 +1,11 @@
 ﻿var express = require('express');
 var router = express.Router();
 var request = require('request');
+var MongoClient = require('mongodb').MongoClient;
 
 function throwError(res, code, message, error) {
     console.log("ERROR: " + message);
-    console.log("More info: " + err);
+    console.log("More info: " + error);
     res.status(code);
     res.send(message);
 }
@@ -22,8 +23,6 @@ router.get('/api/flags', function (req, res) {
                 { "id": 4, "name": "Randy" }
     ]);
 });
-
-var MongoClient = require('mongodb').MongoClient;
 
 router.get('/getAllPlaces', function (req, res) {
     console.log("getAllPlaces GET");
