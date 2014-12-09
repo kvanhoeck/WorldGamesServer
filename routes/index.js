@@ -223,7 +223,7 @@ router.post('/buyPlace', function (req, res) {
                         else if (user == null) {
                             console.log("User " + req.body.userId + " does not exists!");
                             res.status(400);
-                            res.json([{ "Code": "USER_UNKNOWN" }]);
+                            res.send("The user could not be found");
                         }
                         else {
                             //User exists, check place
