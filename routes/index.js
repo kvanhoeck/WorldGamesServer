@@ -332,7 +332,7 @@ router.post('/getMyWorld', function (req, res) {
 
 router.post('/getPrice', function (req, res) {
     console.log("getPrice POST");
-    res.header("Access-Control-Allow-Origin", "http://worldgamesserver.herokuapp.com");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
