@@ -227,7 +227,7 @@ router.post('/buyPlace', function (req, res) {
                             console.log("User does exists:" + user.firstname + " " + user.lastname);
                             db.collection("place").findOne({ "id": req.body.placeId }, function (err, place) {
                                 if (err) {
-                                    console.log("ERROR retrieving user: " + err);
+                                    console.log("ERROR retrieving place: " + err);
                                     res.json([{ "Code": "ERROR_RETRIEVING" }]);
                                 }
                                 else if (place == null) {
@@ -239,34 +239,60 @@ router.post('/buyPlace', function (req, res) {
                                     //Check if userPlace exists
                                     db.collection("userPlace").findOne(req.body, function (err, userP) {
                                         if (err) {
-                                            console.log("ERROR retrieving user: " + err);
+                                            console.log("ERROR retrieving userPlace: " + err);
                                             res.json([{ "Code": "ERROR_RETRIEVING" }]);
                                         }
                                         else if (userP == null) {
-                                            console.log("UserPlace does not exists, saving now");
-                                            //Add place to user
-                                            var userPlace = [ {
-                                                    "userId": new BSON.ObjectID(user._id),
-                                                    "placeId": new BSON.ObjectID(place._id),
-                                                    "placeType": req.body.placeType,
-                                                    "price": req.body.price,
-                                                    "name": place.name,
-                                                    "lat": place.geometry.location.lat,
-                                                    "lng": place.geometry.location.lng,
-                                                    "icon": place.icon,
-                                                    "createdTS": new Date().getTime(),
-                                                    "lastCashedTS": new Date().getTime()
-                                                }];
-                                            db.collection('userPlace').insert( userPlace, function (err, inserted) {
-                                                    if (err) {
-                                                        console.log("ERROR inserting UserPlace: " + err);
-                                                        res.json([{ "Code": "ERROR_SAVING" }]);
+                                            console.log("UserPlace does not exists, checking wallet");
+                                            //Check if user has enough money
+                                            db.collection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) }, function (err, wallet) {
+                                                if (err) {
+                                                    console.log("ERROR retrieving wallet: " + err);
+                                                    res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                                                }
+                                                else {
+                                                    if (wallet.amount < req.body.price) {
+                                                        console.log("ERROR buying, to little in wallet: " + wallet.amount + " < " + req.body.price);
+                                                        res.json([{ "Code": "ERROR_BUYING" }]);
                                                     }
                                                     else {
-                                                        console.log("UserPlace well inserted");
-                                                        res.json([{ "Code": "SAVED" }]);
+                                                        //Add place to user
+                                                        var userPlace = [{
+                                                                "userId": new BSON.ObjectID(user._id),
+                                                                "placeId": new BSON.ObjectID(place._id),
+                                                                "placeType": req.body.placeType,
+                                                                "price": req.body.price,
+                                                                "name": place.name,
+                                                                "lat": place.geometry.location.lat,
+                                                                "lng": place.geometry.location.lng,
+                                                                "icon": place.icon,
+                                                                "createdTS": new Date().getTime(),
+                                                                "lastCashedTS": new Date().getTime()
+                                                            }];
+                                                        db.collection('userPlace').insert(userPlace, function (err, inserted) {
+                                                            if (err) {
+                                                                console.log("ERROR inserting UserPlace: " + err);
+                                                                res.json([{ "Code": "ERROR_SAVING" }]);
+                                                            }
+                                                            else {
+                                                                console.log("UserPlace well inserted");
+                                                                res.json([{ "Code": "SAVED" }]);
+                                                            }
+                                                        });
+                                                        //Substract price of wallet
+                                                        db.collection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.place.price) }, function (err, wal) {
+                                                            if (err) {
+                                                                console.log("ERROR updating Wallet: " + err);
+                                                                res.json([{ "Code": "ERROR_SAVING" }]);
+                                                            }
+                                                            else {
+                                                                console.log("Wallet updated");
+                                                                res.json([{ "Code": "SAVED" }]);
+                                                            }
+                                                        });
                                                     }
-                                            });
+                                                }
+                                            })
                                         }
                                         else {
                                             console.log("userPlace does exists");
@@ -328,6 +354,53 @@ router.post('/getMyWorld', function (req, res) {
             });
         }
     });
+});
+
+router.post('/getMyCapital', function (req, res) {
+    console.log("getMyCapital POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
+        if (err) {
+            console.log("ERROR connecting to MongoDB: " + err);
+            res.json([{ "Code": "ERROR_CONNECTING" }]);
+        }
+        else {
+            console.log("Connected to MongoDB");
+            //Authenticate after connecting
+            db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+                if (authErr) {
+                    console.log("ERROR authenticating to MongoDB: " + err);
+                    res.json([{ "Code": "ERROR_AUTHENTICATING" }]);
+                }
+                else {
+                    console.log("Authenticated to MongoDB");
+                    
+                    //Check if the user exists
+                    var mongo = require('mongodb')
+                    var BSON = mongo.BSONPure;
+                    
+                    console.log("Searching for " + req.body.userId);
+                    
+                    db.collection("wallet").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, wallet) {
+                        if (err) {
+                            console.log("ERROR retrieving data: " + err);
+                            res.json([{ "Code": "ERROR_RETRIEVING" }]);
+                        }
+                        else {
+                            console.log("retrieved records:");
+                            console.log(wallet);
+                            console.log("Sending this back to requester");
+                            res.json(wallet);
+                        }
+                    });
+                }
+            });
+        }
+    });    
 });
 
 router.post('/getPrice', function (req, res) {
