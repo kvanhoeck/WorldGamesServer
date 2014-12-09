@@ -283,7 +283,7 @@ router.post('/buyPlace', function (req, res) {
     });
 });
 
-router.get('/getMyWorld', function (req, res) {
+router.post('/getMyWorld', function (req, res) {
     console.log("getMyWorld POST");
     res.header("Access-Control-Allow-Origin", "http://localhost");
     res.header("Access-Control-Allow-Methods", "GET, POST");
