@@ -212,6 +212,8 @@ router.post('/buyPlace', function (req, res) {
                     //Check if the user exists
                     var mongo = require('mongodb')
                     var BSON = mongo.BSONPure;
+                    console.log("Received:");
+                    console.log(req.body);
 
                     db.collection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId)}, function (err, user) {
                         if (err) {
