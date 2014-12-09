@@ -330,9 +330,32 @@ router.get('/getMyWorld', function (req, res) {
     });
 });
 
-
 router.get('/getPrice', function (req, res) {
     console.log("getPrice GET");
+    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    console.log("Searching for " + req.body.name + ' - ' + req.body.vicinity);
+    
+    request("https://www.google.be/search?hl=en&q=" + req.body.name.replace(/\s+/g, '+') + "+" + req.body.vicinity.replace(/\s+/g, '+'), function (error, response, body) {
+        if (!error) {
+            console.log("SUCCESS: " + body)
+            // <div id="resultStats">About 7.630 results
+            var searchString = 'id="resultStats">About ';
+            var resultString = body.indexOf(searchString);
+            var price = body.substring(resultString + searchString.length, body.indexOf(' ', resultString + searchString.length));
+            console.log("PRICE: " + price);
+            res.json([{ "status": "VALID", "price": price }]);
+        } else {
+            res.json([{ "status": "ERROR", "price": -1 }]);
+        }
+    });
+});
+
+router.post('/getPrice', function (req, res) {
+    console.log("getPrice POST");
     res.header("Access-Control-Allow-Origin", "http://localhost");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
