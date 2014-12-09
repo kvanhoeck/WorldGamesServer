@@ -222,6 +222,7 @@ router.post('/buyPlace', function (req, res) {
                         }
                         else if (user == null) {
                             console.log("User " + req.body.userId + " does not exists!");
+                            res.status(400);
                             res.json([{ "Code": "USER_UNKNOWN" }]);
                         }
                         else {
@@ -234,6 +235,7 @@ router.post('/buyPlace', function (req, res) {
                                 }
                                 else if (place == null) {
                                     console.log("Place " + req.body.placeId + " with type " + req.body.placeType + " does not exists!");
+                                    res.status(400);
                                     res.json([{ "Code": "PLACE_UNKNOWN" }]);
                                 }
                                 else {
@@ -242,6 +244,7 @@ router.post('/buyPlace', function (req, res) {
                                     db.collection("userPlace").findOne(req.body, function (err, userP) {
                                         if (err) {
                                             console.log("ERROR retrieving userPlace: " + err);
+                                            res.status(400);
                                             res.json([{ "Code": "ERROR_RETRIEVING" }]);
                                         }
                                         else if (userP == null) {
@@ -250,6 +253,7 @@ router.post('/buyPlace', function (req, res) {
                                             db.collection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) }, function (err, wallet) {
                                                 if (err) {
                                                     console.log("ERROR retrieving wallet: " + err);
+                                                    res.status(400);
                                                     res.json([{ "Code": "ERROR_RETRIEVING" }]);
                                                 }
                                                 else {
@@ -274,6 +278,7 @@ router.post('/buyPlace', function (req, res) {
                                                         db.collection('userPlace').insert(userPlace, function (err, inserted) {
                                                             if (err) {
                                                                 console.log("ERROR inserting UserPlace: " + err);
+                                                                res.status(400);
                                                                 res.json([{ "Code": "ERROR_SAVING" }]);
                                                             }
                                                             else {
@@ -285,6 +290,7 @@ router.post('/buyPlace', function (req, res) {
                                                         db.collection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.place.price) }, function (err, wal) {
                                                             if (err) {
                                                                 console.log("ERROR updating Wallet: " + err);
+                                                                res.status(400);
                                                                 res.json([{ "Code": "ERROR_SAVING" }]);
                                                             }
                                                             else {
@@ -298,6 +304,7 @@ router.post('/buyPlace', function (req, res) {
                                         }
                                         else {
                                             console.log("userPlace does exists");
+                                            res.status(400);
                                             res.json([{ "Code": "ALREADY_SAVED" }]);
                                         }
                                     });
