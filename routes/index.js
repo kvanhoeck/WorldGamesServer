@@ -54,7 +54,7 @@ router.get('/getAllPlaces', function (req, res) {
 
 router.post('/setPlace', function (req, res) {
     console.log("setPlace POST");
-    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
@@ -112,7 +112,7 @@ router.post('/setPlace', function (req, res) {
 
 router.post('/setUser', function (req, res) {
     console.log("setUser POST");
-    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
@@ -188,7 +188,7 @@ router.post('/setUser', function (req, res) {
 
 router.post('/buyPlace', function (req, res) {
     console.log("buyPlace POST");
-    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
@@ -285,7 +285,7 @@ router.post('/buyPlace', function (req, res) {
 
 router.post('/getMyWorld', function (req, res) {
     console.log("getMyWorld POST");
-    res.header("Access-Control-Allow-Origin", "http://localhost");
+    res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
