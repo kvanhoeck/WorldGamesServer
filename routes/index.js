@@ -187,7 +187,7 @@ router.post('/buyPlace', function (req, res) {
                                 else {
                                     console.log("Place does exists: " + place.name);
                                     //Check if userPlace exists
-                                    db.collection("userPlace").findOne(req.body, function (err, userP) {
+                                    db.collection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType }, function (err, userP) {
                                         if (err) throwError(res, 400, "Could not retreive link between user and place", err);
                                         else if (userP == null) {
                                             console.log("UserPlace does not exists, checking wallet");
@@ -317,6 +317,64 @@ router.post('/getMyCapital', function (req, res) {
     });    
 });
 
+router.post('/cashPlace', function (req, res) {
+    console.log("cashPlace POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    var Fiber = require('fibers');
+    var MongoSync = require("mongo-sync");
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            var jsonBody = JSON.stringify(req.body);
+            
+            var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
+            var wallet = db.getCollection("wallet").findOne({ "userId.$oid": jsonBody.userId });
+            
+            if (user == null)
+                throwError(res, 400, "Could not retreive User", "User is null");
+            else if (userPlace == null)
+                throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
+            else if (wallet == null)
+                throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+            else {
+                var now = new Date();
+                var seconds = ((now.getTime() - userPlace.lastCashedTS) * .001) >> 0;
+                console.log("Last cashed TS was " + seconds + " seconds ago");
+                var profit = userPlace.price / 2592000 * seconds;
+                console.log("Provit is " + profit);
+                console.log("Provit is " + profit.toFixed(4));
+                
+                //Save profit to wallet
+                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount + profit.toFixed(4)) });
+                //Save new lastCashedTS to userPlace
+                db.getCollection("userPlace").update({ _id : userPlace._id }, {
+                    userId : userPlace.userId, 
+                    placeId: userPlace.placeId, 
+                    placeType: userPlace.placeType, 
+                    price: userPlace.price, 
+                    name: userPlace.name,
+                    lat: userPlace.lat,
+                    lng: userPlace.lng,
+                    icon: userPlace.icon,
+                    createdTS: userPlace.createdTS,
+                    lastCashedTS: now.getTime()
+                });
+
+                res.json([{ "Code": "SAVED" }]);
+            }
+        } catch (e) {
+            console.log("ERROR: " + e);
+            throwError(res, 400, "Woops: " + e, e);
+        }
+    }).run();
+});
+
 router.post('/getPrice', function (req, res) {
     console.log("getPrice POST");
     res.header("Access-Control-Allow-Origin", "*");
@@ -338,5 +396,15 @@ router.post('/getPrice', function (req, res) {
         }
     });
 });
+
+function getDB() {
+    var Fiber = require('fibers');
+    var MongoSync = require("mongo-sync");
+
+    var db = new MongoSync.Server().connect("mongodb://ds055690.mongolab.com:55690/buytheworld");
+    db.auth("cognito_btw", "G6rzc4dlr");
+
+    return db;
+}
 
 module.exports = router;
