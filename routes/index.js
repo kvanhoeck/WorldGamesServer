@@ -172,10 +172,12 @@ router.post('/buyPlace', function (req, res) {
                     var BSON = mongo.BSONPure;
                     console.log("Received:");
                     console.log(req.body);
+                    console.log("userId:");
+                    console.log(req.body.userId);
 
                     db.collection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId)}, function (err, user) {
                         if (err) throwError(res, 400, "Could not retreive user", err);
-                        else if (user == null) throwError(res, 400, "User " + req.body.userId + " does not exists!", "User is null");
+                        else if (user == null) throwError(res, 400, "User does not exists!", "User " + req.body.userId + " is null");
                         else {
                             //User exists, check place
                             console.log("User does exists:" + user.firstname + " " + user.lastname);
