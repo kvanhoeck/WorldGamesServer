@@ -174,6 +174,9 @@ router.post('/buyPlace', function (req, res) {
                     console.log(req.body);
                     console.log("userId:");
                     console.log(req.body.userId);
+                    var jsonBody = JSON.stringify(req.body);
+                    console.log("JSON:");
+                    console.log(jsonBody);
 
                     db.collection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId)}, function (err, user) {
                         if (err) throwError(res, 400, "Could not retreive user", err);
