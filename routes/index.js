@@ -172,40 +172,36 @@ router.post('/buyPlace', function (req, res) {
                     var BSON = mongo.BSONPure;
                     console.log("Received:");
                     console.log(req.body);
-                    console.log("userId:");
-                    console.log(req.body.userId);
                     var jsonBody = JSON.stringify(req.body);
-                    console.log("JSON:");
-                    console.log(jsonBody);
-
-                    db.collection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId)}, function (err, user) {
+                    
+                    db.collection("user").findOne({ "_id": new BSON.ObjectID(jsonBody.userId)}, function (err, user) {
                         if (err) throwError(res, 400, "Could not retreive user", err);
-                        else if (user == null) throwError(res, 400, "User does not exists!", "User " + req.body.userId + " is null");
+                        else if (user == null) throwError(res, 400, "User does not exists!", "User " + jsonBody.userId + " is null");
                         else {
                             //User exists, check place
                             console.log("User does exists:" + user.firstname + " " + user.lastname);
-                            db.collection("place").findOne({ "id": req.body.placeId }, function (err, place) {
+                            db.collection("place").findOne({ "id": jsonBody.placeId }, function (err, place) {
                                 if (err) throwError(res, 400, "Could not retreive place", err);
-                                else if (place == null) throwError(res, 400,"The selected place does not exists", "Place " + req.body.placeId + " with type " + req.body.placeType + " does not exists!");
+                                else if (place == null) throwError(res, 400,"The selected place does not exists", "Place " + jsonBody.placeId + " with type " + jsonBody.placeType + " does not exists!");
                                 else {
                                     console.log("Place does exists: " + place.name);
                                     //Check if userPlace exists
-                                    db.collection("userPlace").findOne(req.body, function (err, userP) {
+                                    db.collection("userPlace").findOne(jsonBody, function (err, userP) {
                                         if (err) throwError(res, 400, "Could not retreive link between user and place", err);
                                         else if (userP == null) {
                                             console.log("UserPlace does not exists, checking wallet");
                                             //Check if user has enough money
-                                            db.collection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) }, function (err, wallet) {
+                                            db.collection("wallet").findOne({ "userId": new BSON.ObjectID(jsonBody.userId) }, function (err, wallet) {
                                                 if (err) throwError(res, 400, "Could not retreive wallet", err);
                                                 else {
-                                                    if (wallet.amount < req.body.price) throwError(res, 400, "You do not have enough money to buy this place", "To little in wallet: " + wallet.amount + " < " + req.body.price);
+                                                    if (wallet.amount < jsonBody.price) throwError(res, 400, "You do not have enough money to buy this place", "To little in wallet: " + wallet.amount + " < " + jsonBody.price);
                                                     else {
                                                         //Add place to user
                                                         var userPlace = [{
                                                                 "userId": new BSON.ObjectID(user._id),
                                                                 "placeId": new BSON.ObjectID(place._id),
-                                                                "placeType": req.body.placeType,
-                                                                "price": req.body.price,
+                                                                "placeType": jsonBody.placeType,
+                                                                "price": jsonBody.price,
                                                                 "name": place.name,
                                                                 "lat": place.geometry.location.lat,
                                                                 "lng": place.geometry.location.lng,
@@ -221,7 +217,7 @@ router.post('/buyPlace', function (req, res) {
                                                             }
                                                         });
                                                         //Substract price of wallet
-                                                        db.collection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.place.price) }, function (err, wal) {
+                                                        db.collection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - jsonBody.price) }, function (err, wal) {
                                                             if (err) throwError(res, 400, "Could not update the wallet", err);
                                                             else {
                                                                 console.log("Wallet updated");
