@@ -174,6 +174,10 @@ router.post('/buyPlace', function (req, res) {
                     console.log(req.body);
                     var jsonBody = JSON.stringify(req.body);
                     
+                    var t = new BSON.ObjectID(jsonBody.userId)
+                    console.log("ObjectId:");
+                    console.log(t);
+
                     db.collection("user").findOne({ "_id": new BSON.ObjectID(jsonBody.userId)}, function (err, user) {
                         if (err) throwError(res, 400, "Could not retreive user", err);
                         else if (user == null) throwError(res, 400, "User does not exists!", "User " + jsonBody.userId + " is null");
