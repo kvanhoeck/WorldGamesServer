@@ -248,7 +248,7 @@ router.post('/buyPlace', function (req, res) {
             var db = getDB();
             var jsonBody = JSON.stringify(req.body);
             
-            var user = db.getCollection("user").findOne({ "_id.$oid": req.body[0].userId });
+            var user = db.getCollection("user").findOne({ "_id.$oid": req.body.userId });
             var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body[0].lat, "geometry.location.lng": req.body[0].lng });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body[0].userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
             
@@ -259,7 +259,7 @@ router.post('/buyPlace', function (req, res) {
             else if (userPlace !== null)
                 throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "User already owns this place");
             else {
-                var wallet = db.getCollection("wallet").findOne({ "userId.$oid": req.body[0].userId });
+                var wallet = db.getCollection("wallet").findOne({ "userId.$oid": req.body.userId });
                 
                 if (wallet == null)
                     throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
