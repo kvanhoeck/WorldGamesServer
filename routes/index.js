@@ -255,10 +255,7 @@ router.post('/buyPlace', function (req, res) {
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
             
             var place2 = db.getCollection("place").findOne({ "_id.$oid": '5489a00547b6640b009bf7fb' });
-            var place3 = db.getCollection("place").findOne({ "place_id": jsonBody.place_id });
-            
-            var jsonObject = JSON.parse(req.body);
-            console.log("JSONOBJECT  : " + jsonObject);
+            var place3 = db.getCollection("place").findOne({ "place_id": req.body[0].place_id });
             
             console.log("USER        : " + user);
             console.log("USER.EMAIL  : " + user.email);
