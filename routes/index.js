@@ -277,7 +277,7 @@ router.post('/buyPlace', function (req, res) {
                         //Add place to user
                         var userPlace = [{
                                 "userId": new BSON.ObjectID(user._id),
-                                "placeId": new BSON.ObjectID(place._id),
+                                "placeId": place.id,
                                 "placeType": req.body.placeType,
                                 "price": req.body.price,
                                 "name": place.name,
