@@ -255,6 +255,7 @@ router.post('/buyPlace', function (req, res) {
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
             
             console.log("USER        : " + user);
+            console.log("USER.EMAIL  : " + user.email);
             console.log("USER.ID     : " + jsonBody.userId);
             console.log("PLACE       : " + place);
             console.log("Searching for " + req.body.lat + " , " + req.body.lng);
