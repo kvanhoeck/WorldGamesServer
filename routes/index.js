@@ -250,7 +250,7 @@ router.post('/buyPlace', function (req, res) {
             
             var user = db.getCollection("user").findOne({ "_id.$oid": req.body.userId });
             var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body[0].lat, "geometry.location.lng": req.body[0].lng });
-            var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body[0].userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
+            var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body.userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
             
             console.log("Searching for userId              : " + req.body[0].userId);
             console.log("Searching for placeId             : " + req.body[0].placeId);
