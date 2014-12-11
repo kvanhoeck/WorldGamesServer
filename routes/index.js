@@ -247,14 +247,10 @@ router.post('/buyPlace', function (req, res) {
         try {
             var db = getDB();
             var jsonBody = JSON.stringify(req.body);
-            console.log("Received:");
-            console.log(req.body);
             
-            var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            var user = db.getCollection("user").findOne({ "_id.$oid": req.body[0].userId });
             var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body[0].lat, "geometry.location.lng": req.body[0].lng });
-            var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
-            
-            console.log("PLACE       : " + place);
+            var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body[0].userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
             
             if (user == null)
                 throwError(res, 400, "Could not retreive User", "User is null");
@@ -263,19 +259,20 @@ router.post('/buyPlace', function (req, res) {
             else if (userPlace !== null)
                 throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "User already owns this place");
             else {
-                var wallet = db.getCollection("wallet").findOne({ "userId.$oid": jsonBody.userId });
+                var wallet = db.getCollection("wallet").findOne({ "userId.$oid": req.body[0].userId });
                 
                 if (wallet == null)
                     throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
                 else {
-                    if (wallet.amount < req.body.price) throwError(res, 400, "You do not have enough money to buy this place", "To little in wallet: " + wallet.amount + " < " + req.body.price);
+                    if (wallet.amount < req.body.price) throwError(res, 400, "You do not have enough money to buy this place", "To little in wallet: " + wallet.amount + " < " + req.body[0].price);
                     else {
                         //Add place to user
+                        var BSON = require('mongodb').BSONPure;
                         var userPlace = [{
                                 "userId": new BSON.ObjectID(user._id),
                                 "placeId": place.id,
-                                "placeType": req.body.placeType,
-                                "price": req.body.price,
+                                "placeType": req.body[0].placeType,
+                                "price": req.body[0].price,
                                 "name": place.name,
                                 "lat": place.geometry.location.lat,
                                 "lng": place.geometry.location.lng,
@@ -286,7 +283,7 @@ router.post('/buyPlace', function (req, res) {
                         db.getCollection('userPlace').insert(userPlace);
                         console.log("UserPlace well inserted");
                         //Substract price of wallet
-                        db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.body.price) });
+                        db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.body[0].price) });
                     }
                 }
             }
