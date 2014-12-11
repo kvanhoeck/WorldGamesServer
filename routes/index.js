@@ -254,20 +254,16 @@ router.post('/buyPlace', function (req, res) {
             var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.lat, "geometry.location.lng": req.body.lng });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
             
-            if (userPlace !== null)
+            if (user == null)
+                throwError(res, 400, "Could not retreive User", "User is null");
+            else if (place == null)
+                throwError(res, 400, "Could not retreive Place", "Place is null");
+            else if (userPlace !== null)
                 throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "User already owns this place");
             else {
                 var wallet = db.getCollection("wallet").findOne({ "userId.$oid": jsonBody.userId });
                 
-                var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
-                var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
-                var wallet = db.getCollection("wallet").findOne({ "userId.$oid": jsonBody.userId });
-                
-                if (user == null)
-                    throwError(res, 400, "Could not retreive User", "User is null");
-                else if (place == null)
-                    throwError(res, 400, "Could not retreive Place", "Place is null");
-                else if (userPlace == null)
+                if (userPlace == null)
                     throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
                 else if (wallet == null)
                     throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
