@@ -258,9 +258,7 @@ router.post('/buyPlace', function (req, res) {
             var place3 = db.getCollection("place").findOne({ "place_id": jsonBody.place_id });
             
             var jsonObject = JSON.parse(req.body);
-            var jsonObject2 = JSON.parse(req.body[0]);
             console.log("JSONOBJECT  : " + jsonObject);
-            console.log("JSONOBJECT2 : " + jsonObject2);
             
             console.log("USER        : " + user);
             console.log("USER.EMAIL  : " + user.email);
