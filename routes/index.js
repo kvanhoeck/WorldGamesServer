@@ -246,7 +246,7 @@ router.post('/buyPlace', function (req, res) {
     Fiber(function () {
         try {
             var db = getDB();
-            var jsonBody = JSON.stringify(req.body);
+            var jsonBody = JSON.stringify(req.body[0]);
             console.log("Received:");
             console.log(req.body);
             
@@ -255,12 +255,13 @@ router.post('/buyPlace', function (req, res) {
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
             
             var place2 = db.getCollection("place").findOne({ "_id.$oid": '5489a00547b6640b009bf7fb' });
+            var place3 = db.getCollection("place").findOne({ "place_id": jsonBody.place_id });
 
             console.log("USER        : " + user);
             console.log("USER.EMAIL  : " + user.email);
             console.log("USER.ID     : " + jsonBody.userId);
             console.log("PLACE       : " + place);
-            console.log("PLACE2.NAME : " + place2.name);
+            console.log("PLACE3      : " + place3);
             console.log("Searching for " + req.body.lat + " , " + req.body.lng);
             console.log("Searching for " + jsonBody.lat + " , " + jsonBody.lng);
             console.log("Searching for " + req.body.place_id);
