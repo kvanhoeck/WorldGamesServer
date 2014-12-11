@@ -254,6 +254,10 @@ router.post('/buyPlace', function (req, res) {
             var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.lat, "geometry.location.lng": req.body.lng });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
             
+            console.log("Number of places: " + db.getCollection("place").count());
+            db.getCollection("place").find().forEach(function (p) { console.log(p); });
+            
+
             if (user == null)
                 throwError(res, 400, "Could not retreive User", "User is null");
             else if (place == null)
