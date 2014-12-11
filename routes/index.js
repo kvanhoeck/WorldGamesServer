@@ -251,25 +251,11 @@ router.post('/buyPlace', function (req, res) {
             console.log(req.body);
             
             var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
-            var place = db.getCollection("place").findOne({ "geometry.location.lat": jsonBody.lat, "geometry.location.lng": jsonBody.lng });
+            var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body[0].lat, "geometry.location.lng": req.body[0].lng });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
             
-            var place2 = db.getCollection("place").findOne({ "_id.$oid": '5489a00547b6640b009bf7fb' });
-            var place3 = db.getCollection("place").findOne({ "place_id": req.body[0].place_id });
-            
-            console.log("USER        : " + user);
-            console.log("USER.EMAIL  : " + user.email);
-            console.log("USER.ID     : " + jsonBody.userId);
             console.log("PLACE       : " + place);
-            console.log("PLACE3      : " + place3);
-            console.log("Searching for " + req.body.lat + " , " + req.body.lng);
-            console.log("Searching for " + jsonBody.lat + " , " + jsonBody.lng);
-            console.log("Searching for " + req.body.place_id);
-            console.log("Searching for " + jsonBody.place_id);
-            console.log("JSON        : " + jsonBody);
-            var place2 = db.getCollection("place").findOne({ "geometry.location.lat": req.body.lat, "geometry.location.lng": req.body.lng });
-            console.log("PLACE2: " + place2);
-
+            
             if (user == null)
                 throwError(res, 400, "Could not retreive User", "User is null");
             else if (place == null)
