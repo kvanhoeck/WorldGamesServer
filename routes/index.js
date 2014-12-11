@@ -247,6 +247,8 @@ router.post('/buyPlace', function (req, res) {
         try {
             var db = getDB();
             var jsonBody = JSON.stringify(req.body);
+            console.log("Received:");
+            console.log(req.body);
             
             var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
             var place = db.getCollection("place").findOne({ "id": req.body.placeId });
