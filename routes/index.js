@@ -246,7 +246,7 @@ router.post('/buyPlace', function (req, res) {
     Fiber(function () {
         try {
             var db = getDB();
-            var jsonBody = JSON.stringify(req.body[0]);
+            var jsonBody = JSON.stringify(req.body);
             console.log("Received:");
             console.log(req.body);
             
