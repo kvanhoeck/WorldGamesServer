@@ -254,12 +254,14 @@ router.post('/buyPlace', function (req, res) {
             var place = db.getCollection("place").findOne({ "geometry.location.lat": jsonBody.lat, "geometry.location.lng": jsonBody.lng });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": jsonBody.userId, "placeId.$oid": jsonBody.placeId, "placeType": req.body.placeType });
             
-            console.log("PLACE : " + place);
+            console.log("USER        : " + user);
+            console.log("USER.ID     : " + jsonBody.userId);
+            console.log("PLACE       : " + place);
             console.log("Searching for " + req.body.lat + " , " + req.body.lng);
             console.log("Searching for " + jsonBody.lat + " , " + jsonBody.lng);
             console.log("Searching for " + req.body.place_id);
             console.log("Searching for " + jsonBody.place_id);
-            console.log("JSON: " + jsonBody);
+            console.log("JSON        : " + jsonBody);
             var place2 = db.getCollection("place").findOne({ "geometry.location.lat": req.body.lat, "geometry.location.lng": req.body.lng });
             console.log("PLACE2: " + place2);
 
