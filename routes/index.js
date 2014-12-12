@@ -304,12 +304,6 @@ router.post('/cashPlace', function (req, res) {
             var db = getDB();
             var jsonBody = JSON.stringify(req.body);
             
-            console.log("RECEIVED: " + req.body);
-            console.log("RECEIVED: " + req.body[0]);
-            console.log("JSON    : " + jsonBody);
-            console.log("JSON2   : " + JSON.stringify(req.body[0]));
-            console.log("PLACEID : " + req.body[0].placeId);
-            
             var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body.userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
             var wallet = db.getCollection("wallet").findOne({ "userId.$oid": jsonBody.userId });
@@ -329,7 +323,7 @@ router.post('/cashPlace', function (req, res) {
                 console.log("Provit is " + profit.toFixed(4));
                 
                 //Save profit to wallet
-                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount + profit.toFixed(4)) });
+                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (parseInt(wallet.amount) + parseInt(profit.toFixed(4))) });
                 //Save new lastCashedTS to userPlace
                 db.getCollection("userPlace").update({ _id : userPlace._id }, {
                     userId : userPlace.userId, 
@@ -344,7 +338,41 @@ router.post('/cashPlace', function (req, res) {
                     lastCashedTS: now.getTime()
                 });
 
-                res.json([{ "Code": "SAVED", "Message": "Cashed €" + (wallet.amount + profit.toFixed(4)) }]);
+                res.json([{ "Code": "SAVED", "Message": "Cashed €" + profit.toFixed(4) }]);
+            }
+        } catch (e) {
+            console.log("ERROR: " + e);
+            throwError(res, 400, "Woops: " + e, e);
+        }
+    }).run();
+});
+
+router.post('/resetWallet', function (req, res) {
+    console.log("resetWallet POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    var Fiber = require('fibers');
+    var MongoSync = require("mongo-sync");
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            var jsonBody = JSON.stringify(req.body);
+            
+            var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            var wallet = db.getCollection("wallet").findOne({ "userId.$oid": jsonBody.userId });
+            
+            if (user == null)
+                throwError(res, 400, "Could not retreive User", "User is null");
+            else if (wallet == null)
+                throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+            else {
+                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: req.body.resetValue });
+                
+                res.json([{ "Code": "SAVED" }]);
             }
         } catch (e) {
             console.log("ERROR: " + e);
