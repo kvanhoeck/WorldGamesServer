@@ -292,7 +292,7 @@ router.post('/getMyCapital', function (req, res) {
 router.post('/cashPlace', function (req, res) {
     console.log("cashPlace POST");
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "POST");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
     
