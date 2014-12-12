@@ -305,7 +305,7 @@ router.post('/cashPlace', function (req, res) {
             var jsonBody = JSON.stringify(req.body);
             
             console.log("RECEIVED: " + req.body);
-            consoel.log("PLACEID: " + req.body[0].placeId);
+            console.log("PLACEID: " + req.body[0].placeId);
             
             var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body.userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
