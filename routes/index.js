@@ -169,13 +169,6 @@ router.post('/buyPlace', function (req, res) {
             var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body[0].lat, "geometry.location.lng": req.body[0].lng });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body.userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
             
-            console.log("Searching for userId              : " + req.body[0].userId);
-            console.log("Searching for placeId             : " + req.body[0].placeId);
-            console.log("Searching for placeType           : " + req.body[0].placeType);
-            console.log("USERPLACE                         : " + userPlace);
-            console.log("USERPLACE (userPlace == null)     :" + (userPlace == null));
-            console.log("USERPLACE (userPlace == undefined):" + (userPlace == 'undefined'));;
-
             if (user == null)
                 throwError(res, 400, "Could not retreive User", "User is null");
             else if (place == null)
@@ -310,6 +303,9 @@ router.post('/cashPlace', function (req, res) {
         try {
             var db = getDB();
             var jsonBody = JSON.stringify(req.body);
+            
+            console.log("RECEIVED: " + req.body);
+            consoel.log("PLACEID: " + req.body[0].placeId);
             
             var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
             var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body.userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
