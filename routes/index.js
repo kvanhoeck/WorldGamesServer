@@ -370,7 +370,7 @@ router.post('/resetWallet', function (req, res) {
             else if (wallet == null)
                 throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
             else {
-                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: req.body[0].resetValue });
+                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: parseInt(req.body[0].resetValue) });
                 
                 res.json([{ "Code": "SAVED" }]);
             }
