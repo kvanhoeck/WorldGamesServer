@@ -407,6 +407,7 @@ router.post('/findMyPlacesNearby', function (req, res) {
                 
                 console.log("FindMyPlacesNearby: Received JSON " + jsonBody);
                 console.log("LAT: " + req.body.lat);
+                console.log("LAT: " + req.body[0].lat);
                 console.log("LAT: " + jsonBody.lat);
 
                 var myLocations = db.getCollection("userPlace").find(
