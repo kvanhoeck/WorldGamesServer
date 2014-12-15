@@ -185,7 +185,7 @@ router.post('/buyPlace', function (req, res) {
                     else {
                         //Add place to user
                         var BSON = require('mongodb').BSONPure;
-                        var userPlace = [{
+                        var userPlace = [ {
                                 "userId": new BSON.ObjectID(user._id),
                                 "placeId": place.id,
                                 "placeType": req.body[0].placeType,
@@ -195,7 +195,8 @@ router.post('/buyPlace', function (req, res) {
                                 "lng": place.geometry.location.lng,
                                 "icon": place.icon,
                                 "createdTS": new Date().getTime(),
-                                "lastCashedTS": new Date().getTime()
+                                "lastCashedTS": new Date().getTime(),
+                                "lastCheckInTS" : new Date().getTime()
                             }];
                         db.getCollection('userPlace').insert(userPlace);
                         console.log("UserPlace well inserted");
@@ -335,7 +336,8 @@ router.post('/cashPlace', function (req, res) {
                     lng: userPlace.lng,
                     icon: userPlace.icon,
                     createdTS: userPlace.createdTS,
-                    lastCashedTS: now.getTime()
+                    lastCashedTS: now.getTime(),
+                    lastCheckInTS: userPlace.lastCheckInTS
                 });
 
                 res.json([{ "Code": "SAVED", "Message": "Cashed €" + profit.toFixed(4) }]);
@@ -346,6 +348,68 @@ router.post('/cashPlace', function (req, res) {
         }
     }).run();
 });
+
+router.post('/checkInPlace', function (req, res) {
+    console.log("cashPlace POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    var Fiber = require('fibers');
+    var MongoSync = require("mongo-sync");
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            var jsonBody = JSON.stringify(req.body);
+            
+            var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            var userPlace = db.getCollection("userPlace").findOne({ "userId.$oid": req.body.userId, "placeId": req.body[0].placeId, "placeType": req.body[0].placeType });
+            var wallet = db.getCollection("wallet").findOne({ "userId.$oid": jsonBody.userId });
+            
+            if (user == null)
+                throwError(res, 400, "Could not retreive User", "User is null");
+            else if (userPlace == null)
+                throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
+            else if (wallet == null)
+                throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+            else {
+                var oneDay = 24 * 60 * 60 * 1000;
+                var now = new Date();
+                var diffDays = Math.round(Math.abs((now.getTime() - userPlace.lastCheckInTS.getTime()) / (oneDay)));
+                console.log("Last Checked In TS was " + diffDays + " days ago");
+                //1 week
+                var profit = userPlace.price / 604800 * seconds
+                console.log("Provit is " + profit);
+                console.log("Provit is " + profit.toFixed(4));
+                
+                //Save profit to wallet
+                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (parseInt(wallet.amount) + parseInt(profit.toFixed(4))) });
+                //Save new lastCashedTS to userPlace
+                db.getCollection("userPlace").update({ _id : userPlace._id }, {
+                    userId : userPlace.userId, 
+                    placeId: userPlace.placeId, 
+                    placeType: userPlace.placeType, 
+                    price: userPlace.price, 
+                    name: userPlace.name,
+                    lat: userPlace.lat,
+                    lng: userPlace.lng,
+                    icon: userPlace.icon,
+                    createdTS: userPlace.createdTS,
+                    lastCashedTS: userPlace.lastCashedTS,
+                    lastCheckInTS: now.getDate()
+                });
+                
+                res.json([{ "Code": "SAVED", "Message": "Cashed €" + profit.toFixed(4) }]);
+            }
+        } catch (e) {
+            console.log("ERROR: " + e);
+            throwError(res, 400, "Woops: " + e, e);
+        }
+    }).run();
+});
+
 
 router.post('/resetWallet', function (req, res) {
     console.log("resetWallet POST");
