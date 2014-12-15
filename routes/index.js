@@ -390,7 +390,7 @@ router.post('/findMyPlacesNearby', function (req, res) {
     
     var Fiber = require('fibers');
     var MongoSync = require("mongo-sync");
-    console.log("FindMyPlacesNearby: received " + req.body)
+    
     
     Fiber(function () {
         try {
@@ -404,6 +404,9 @@ router.post('/findMyPlacesNearby', function (req, res) {
             else {
                 var mongo = require('mongodb')
                 var BSON = mongo.BSONPure;
+                
+                console.log("FindMyPlacesNearby: Received      " + req.body);
+                console.log("FindMyPlacesNearby: Received JSON " + jsonBody);
 
                 var myLocations = db.getCollection("userPlace").find(
                     {
