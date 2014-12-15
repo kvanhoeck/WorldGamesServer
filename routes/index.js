@@ -406,17 +406,13 @@ router.post('/findMyPlacesNearby', function (req, res) {
                 var BSON = mongo.BSONPure;
                 
                 console.log("FindMyPlacesNearby: Received JSON " + jsonBody);
-                console.log("LAT: " + req.body.lat);
-                console.log("LAT: " + req.body[0].lat);
-                console.log("LAT: " + jsonBody.lat);
-
                 var myLocations = db.getCollection("userPlace").find(
                     {
                         $and: [ { "userId": new BSON.ObjectID(req.body.userId) },
-                                { "lat": { $gt: jsonBody.lat - 0.01 } }, 
-                                { "lat": { $lt: jsonBody.lat + 0.01 } },
-                                { "lng": { $gt: jsonBody.lng - 0.01 } },
-                                { "lng": { $lt: jsonBody.lng + 0.01 } }
+                                { "lat": { $gt: req.body[0].lat - 0.01 } }, 
+                                { "lat": { $lt: req.body[0].lat + 0.01 } },
+                                { "lng": { $gt: req.body[0].lng - 0.01 } },
+                                { "lng": { $lt: req.body[0].lng + 0.01 } }
                         ]
                     });
                 console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations);
