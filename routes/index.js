@@ -377,13 +377,14 @@ router.post('/checkInPlace', function (req, res) {
             else {
                 var oneDay = 24 * 60 * 60 * 1000;
                 var now = new Date();
-                var diffDays = parseInt(now.toISOString().slice(0, 10).replace(/-/g, "")) - parseInt(userPlace.lastCheckInTs)
-                console.log("Last Checked In TS was " + diffDays + " days ago");
+                console.log("CheckInPlace: Calculating days between " + now.toISOString().slice(0, 10).replace(/-/g, "") + " and " + userPlace.lastCheckInTs);
+                var diffDays = parseInt(now.toISOString().slice(0, 10).replace(/-/g, "")) - parseInt(userPlace.lastCheckInTs);
+                console.log("CheckInPlace: Last Checked In TS was " + diffDays + " days ago");
                 if (diffDays > 0) {
                     //1 week
                     var profit = userPlace.price / 604800
-                    console.log("Provit is " + profit);
-                    console.log("Provit is " + profit.toFixed(4));
+                    console.log("CheckInPlace: Provit is " + profit);
+                    console.log("CheckInPlace: Provit is " + profit.toFixed(4));
                     
                     //Save profit to wallet
                     db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (parseInt(wallet.amount) + parseInt(profit.toFixed(4))) });
@@ -409,7 +410,7 @@ router.post('/checkInPlace', function (req, res) {
                 }
             }
         } catch (e) {
-            console.log("ERROR: " + e);
+            console.log("CheckInPlace: ERROR: " + e);
             throwError(res, 400, "Woops: " + e, e);
         }
     }).run();
