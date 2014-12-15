@@ -405,16 +405,15 @@ router.post('/findMyPlacesNearby', function (req, res) {
                 var mongo = require('mongodb')
                 var BSON = mongo.BSONPure;
                 
-                console.log("FindMyPlacesNearby: Received      " + req.body[0]);
                 console.log("FindMyPlacesNearby: Received JSON " + jsonBody);
 
                 var myLocations = db.getCollection("userPlace").find(
                     {
                         $and: [ { "userId": new BSON.ObjectID(req.body.userId) },
-                                { "lat": { $gt: req.body.lat - 0.01 } }, 
-                                { "lat": { $lt: req.body.lat + 0.01 } },
-                                { "lng": { $gt: req.body.lng - 0.01 } },
-                                { "lng": { $lt: req.body.lng + 0.01 } }
+                                { "lat": { $gt: jsonBody.lat - 0.01 } }, 
+                                { "lat": { $lt: jsonBody.lat + 0.01 } },
+                                { "lng": { $gt: jsonBody.lng - 0.01 } },
+                                { "lng": { $lt: jsonBody.lng + 0.01 } }
                         ]
                     });
                 console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations);
