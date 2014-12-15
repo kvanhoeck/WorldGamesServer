@@ -377,31 +377,36 @@ router.post('/checkInPlace', function (req, res) {
             else {
                 var oneDay = 24 * 60 * 60 * 1000;
                 var now = new Date();
-                //var diffDays = Math.round(Math.abs((now.getTime() - userPlace.lastCheckInTS.getTime()) / (oneDay)));
-                //console.log("Last Checked In TS was " + diffDays + " days ago");
-                //1 week
-                var profit = userPlace.price / 604800
-                console.log("Provit is " + profit);
-                console.log("Provit is " + profit.toFixed(4));
-                
-                //Save profit to wallet
-                db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (parseInt(wallet.amount) + parseInt(profit.toFixed(4))) });
-                //Save new lastCashedTS to userPlace
-                db.getCollection("userPlace").update({ _id : userPlace._id }, {
-                    userId : userPlace.userId, 
-                    placeId: userPlace.placeId, 
-                    placeType: userPlace.placeType, 
-                    price: userPlace.price, 
-                    name: userPlace.name,
-                    lat: userPlace.lat,
-                    lng: userPlace.lng,
-                    icon: userPlace.icon,
-                    createdTS: userPlace.createdTS,
-                    lastCashedTS: userPlace.lastCashedTS,
-                    lastCheckInTS: now.getDate()
-                });
-                
-                res.json([{ "Code": "SAVED", "Message": "Cashed €" + profit.toFixed(4) }]);
+                var diffDays = parseInt(now.toISOString().slice(0, 10).replace(/-/g, "")) - parseInt(userplace.lastCheckInTs)
+                console.log("Last Checked In TS was " + diffDays + " days ago");
+                if (diffDays > 0) {
+                    //1 week
+                    var profit = userPlace.price / 604800
+                    console.log("Provit is " + profit);
+                    console.log("Provit is " + profit.toFixed(4));
+                    
+                    //Save profit to wallet
+                    db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (parseInt(wallet.amount) + parseInt(profit.toFixed(4))) });
+                    //Save new lastCashedTS to userPlace
+                    db.getCollection("userPlace").update({ _id : userPlace._id }, {
+                        userId : userPlace.userId, 
+                        placeId: userPlace.placeId, 
+                        placeType: userPlace.placeType, 
+                        price: userPlace.price, 
+                        name: userPlace.name,
+                        lat: userPlace.lat,
+                        lng: userPlace.lng,
+                        icon: userPlace.icon,
+                        createdTS: userPlace.createdTS,
+                        lastCashedTS: userPlace.lastCashedTS,
+                        lastCheckInTS: now.toISOString().slice(0, 10).replace(/-/g, "")
+                    });
+                    
+                    res.json([{ "Code": "SAVED", "Message": "Cashed €" + profit.toFixed(4) }]);
+                }
+                else {
+                    throwError(res, 400, "Already checked in today!", "Already checked in today!");
+                }
             }
         } catch (e) {
             console.log("ERROR: " + e);
