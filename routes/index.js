@@ -381,6 +381,51 @@ router.post('/resetWallet', function (req, res) {
     }).run();
 });
 
+router.post('/findMyPlacesNearby', function (req, res) {
+    console.log("findMyPlacesNearby POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    var Fiber = require('fibers');
+    var MongoSync = require("mongo-sync");
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            var jsonBody = JSON.stringify(req.body);
+            
+            var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            
+            if (user == null)
+                throwError(res, 400, "Could not retreive User", "User is null");
+            else {
+                var myLocations = db.getCollection("userPlace").find(
+                    {
+                        $and: [ { "lat": { $gt: req.body.lat - 0.01 } }, 
+                                { "lat": { $lt: req.body.lat + 0.01 } },
+                                { "lng": { $gt: req.body.lng - 0.01 } },
+                                { "lng": { $lt: req.body.lng + 0.01 } }
+                        ]
+                    });
+                myLocations.toArray(function (err, places){
+                    if (err) throwError(res, 400, "Could not retreive link between user and place", err);
+                    else {
+                        console.log("retrieved records:");
+                        console.log(places);
+                        console.log("Sending this back to requester");
+                        res.json(places);
+                    }
+                })
+            }
+        } catch (e) {
+            console.log("ERROR: " + e);
+            throwError(res, 400, "Woops: " + e, e);
+        }
+    }).run();
+});
+
 router.post('/getPrice', function (req, res) {
     console.log("getPrice POST");
     res.header("Access-Control-Allow-Origin", "*");
