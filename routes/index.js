@@ -411,15 +411,13 @@ router.post('/findMyPlacesNearby', function (req, res) {
                         ]
                     });
                 console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations);
-                myLocations.toArray(function (err, places){
-                    if (err) throwError(res, 400, "Could not retreive link between user and place", err);
-                    else {
-                        console.log("retrieved records:");
-                        console.log(places);
-                        console.log("Sending this back to requester");
-                        res.json(places);
-                    }
-                })
+                var result = [];
+                myLocations.forEach(function (location) {
+                    console.log("FindMyPlacesNearby: Found " + location.name);
+                    result.push(location);
+                });
+                console.log("FindMyPlacesNearby: Sending this back to requester");
+                res.json(result);
             }
         } catch (e) {
             console.log("ERROR: " + e);
