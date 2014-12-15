@@ -377,12 +377,12 @@ router.post('/checkInPlace', function (req, res) {
             else {
                 var oneDay = 24 * 60 * 60 * 1000;
                 var now = new Date();
-                console.log("CheckInPlace: Calculating days between " + now.toISOString().slice(0, 10).replace(/-/g, "") + " and " + userPlace.lastCheckInTs);
+                console.log("CheckInPlace: Calculating days between " + now.toISOString().slice(0, 10).replace(/-/g, "") + " and " + userPlace.lastCheckInTS);
                 var diffDays = parseInt(now.toISOString().slice(0, 10).replace(/-/g, "")) - parseInt(userPlace.lastCheckInTS);
                 console.log("CheckInPlace: Last Checked In TS was " + diffDays + " days ago");
                 if (diffDays > 0) {
                     //1 week
-                    var profit = userPlace.price / 604800
+                    var profit = (userPlace.price / 2592000) * 604800;
                     console.log("CheckInPlace: Provit is " + profit);
                     console.log("CheckInPlace: Provit is " + profit.toFixed(4));
                     
