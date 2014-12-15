@@ -406,17 +406,17 @@ router.post('/findMyPlacesNearby', function (req, res) {
                 var BSON = mongo.BSONPure;
                 
                 console.log("FindMyPlacesNearby: Received JSON " + jsonBody);
+                console.log("FindMyPlacesNearby: Searching places between " + (parseFloat(req.body[0].lat) - 0.01) + " and " + (parseFloat(req.body[0].lat) + 0.01));
+                console.log("FindMyPlacesNearby: Searching places between " + (parseFloat(req.body[0].lng) - 0.01) + " and " + (parseFloat(req.body[0].lng) + 0.01));
                 var myLocations = db.getCollection("userPlace").find(
                     {
-                        $and: [ { "userId": new BSON.ObjectID(req.body.userId) },
-                                { "lat": { $gt: req.body[0].lat - 0.01 } }, 
-                                { "lat": { $lt: req.body[0].lat + 0.01 } },
-                                { "lng": { $gt: req.body[0].lng - 0.01 } },
-                                { "lng": { $lt: req.body[0].lng + 0.01 } }
+                        "$and": [   { "userId.$oid": req.body.userId },
+                                    { "lat": { "$gt": (parseFloat(req.body[0].lat) - 0.01) } }, 
+                                    { "lat": { "$lt": (parseFloat(req.body[0].lat) + 0.01) } },
+                                    { "lng": { "$gt": (parseFloat(req.body[0].lng) - 0.01) } },
+                                    { "lng": { "$lt": (parseFloat(req.body[0].lng) + 0.01) } }
                         ]
                     });
-                console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations);
-                console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations[0]);
                 var result = [];
                 myLocations.forEach(function (location) {
                     console.log("FindMyPlacesNearby: Found " + location.name);
