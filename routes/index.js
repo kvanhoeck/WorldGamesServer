@@ -377,7 +377,7 @@ router.post('/checkInPlace', function (req, res) {
             else {
                 var oneDay = 24 * 60 * 60 * 1000;
                 var now = new Date();
-                var diffDays = parseInt(now.toISOString().slice(0, 10).replace(/-/g, "")) - parseInt(userplace.lastCheckInTs)
+                var diffDays = parseInt(now.toISOString().slice(0, 10).replace(/-/g, "")) - parseInt(userPlace.lastCheckInTs)
                 console.log("Last Checked In TS was " + diffDays + " days ago");
                 if (diffDays > 0) {
                     //1 week
