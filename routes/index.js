@@ -405,7 +405,7 @@ router.post('/findMyPlacesNearby', function (req, res) {
                 var mongo = require('mongodb')
                 var BSON = mongo.BSONPure;
                 
-                console.log("FindMyPlacesNearby: Received      " + req.body);
+                console.log("FindMyPlacesNearby: Received      " + req.body[0]);
                 console.log("FindMyPlacesNearby: Received JSON " + jsonBody);
 
                 var myLocations = db.getCollection("userPlace").find(
