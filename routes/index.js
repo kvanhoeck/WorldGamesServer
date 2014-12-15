@@ -390,6 +390,7 @@ router.post('/findMyPlacesNearby', function (req, res) {
     
     var Fiber = require('fibers');
     var MongoSync = require("mongo-sync");
+    console.log("FindMyPlacesNearby: received " + req.body)
     
     Fiber(function () {
         try {
@@ -409,6 +410,7 @@ router.post('/findMyPlacesNearby', function (req, res) {
                                 { "lng": { $lt: req.body.lng + 0.01 } }
                         ]
                     });
+                console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations);
                 myLocations.toArray(function (err, places){
                     if (err) throwError(res, 400, "Could not retreive link between user and place", err);
                     else {
