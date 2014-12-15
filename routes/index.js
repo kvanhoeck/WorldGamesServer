@@ -402,15 +402,21 @@ router.post('/findMyPlacesNearby', function (req, res) {
             if (user == null)
                 throwError(res, 400, "Could not retreive User", "User is null");
             else {
+                var mongo = require('mongodb')
+                var BSON = mongo.BSONPure;
+
                 var myLocations = db.getCollection("userPlace").find(
                     {
-                        $and: [ { "lat": { $gt: req.body.lat - 0.01 } }, 
+                        $and: [ { "userId": new BSON.ObjectID(req.body.userId) },
+                                { "lat": { $gt: req.body.lat - 0.01 } }, 
                                 { "lat": { $lt: req.body.lat + 0.01 } },
                                 { "lng": { $gt: req.body.lng - 0.01 } },
                                 { "lng": { $lt: req.body.lng + 0.01 } }
                         ]
                     });
                 console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations);
+                var myPl = JSON.stringify(myLocations);
+                console.log("FindMyPlacesNearby: Locations Nearby JSON: " + myPl);
                 var result = [];
                 myLocations.forEach(function (location) {
                     console.log("FindMyPlacesNearby: Found " + location.name);
