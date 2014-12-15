@@ -415,8 +415,6 @@ router.post('/findMyPlacesNearby', function (req, res) {
                         ]
                     });
                 console.log("FindMyPlacesNearby: Locations Nearby: " + myLocations);
-                var myPl = JSON.stringify(myLocations);
-                console.log("FindMyPlacesNearby: Locations Nearby JSON: " + myPl);
                 var result = [];
                 myLocations.forEach(function (location) {
                     console.log("FindMyPlacesNearby: Found " + location.name);
