@@ -377,8 +377,8 @@ router.post('/checkInPlace', function (req, res) {
             else {
                 var oneDay = 24 * 60 * 60 * 1000;
                 var now = new Date();
-                var diffDays = Math.round(Math.abs((now.getTime() - userPlace.lastCheckInTS.getTime()) / (oneDay)));
-                console.log("Last Checked In TS was " + diffDays + " days ago");
+                //var diffDays = Math.round(Math.abs((now.getTime() - userPlace.lastCheckInTS.getTime()) / (oneDay)));
+                //console.log("Last Checked In TS was " + diffDays + " days ago");
                 //1 week
                 var profit = userPlace.price / 604800 * seconds
                 console.log("Provit is " + profit);
