@@ -220,35 +220,65 @@ router.post('/getMyWorld', function (req, res) {
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
     
-    MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) throwError(res, 400, "Could not connect to the database", err);
-        else {
-            console.log("Connected to MongoDB");
-            //Authenticate after connecting
-            db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-                if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
-                else {
-                    console.log("Authenticated to MongoDB");
-                    
-                    //Check if the user exists
-                    var mongo = require('mongodb')
-                    var BSON = mongo.BSONPure;
-                    
-                    console.log("Searching for " + req.body.userId);
-
-                    db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
-                        if (err) throwError(res, 400, "Could not retreive link between user and place", err);
-                        else {
-                            console.log("retrieved records:");
-                            console.log(places);
-                            console.log("Sending this back to requester");
-                            res.json(places);
-                        }
-                    });
-                }
-            });
+    var Fiber = require('fibers');
+    var MongoSync = require("mongo-sync");
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            var jsonBody = JSON.stringify(req.body);
+            
+            var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            //old code: db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
+            var userPlaces = db.getCollection("userPlace").find({ "userId.$oid": req.body.userId});
+            
+            if (user == null)
+                throwError(res, 400, "Could not retreive User", "User is null");
+            else if (userPlaces == null)
+                throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
+            else {
+                var result = [];
+                userPlaces.forEach(function (up) {
+                    console.log("GetMyWorld: Found " + up.name);
+                    result.push(up);
+                });
+                res.json(result);
+            }
+        } catch (e) {
+            console.log("ERROR: " + e);
+            throwError(res, 400, "Woops: " + e, e);
         }
-    });
+    }).run();
+
+    //MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
+    //    if (err) throwError(res, 400, "Could not connect to the database", err);
+    //    else {
+    //        console.log("Connected to MongoDB");
+    //        //Authenticate after connecting
+    //        db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
+    //            if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
+    //            else {
+    //                console.log("Authenticated to MongoDB");
+                    
+    //                //Check if the user exists
+    //                var mongo = require('mongodb')
+    //                var BSON = mongo.BSONPure;
+                    
+    //                console.log("Searching for " + req.body.userId);
+
+    //                db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
+    //                    if (err) throwError(res, 400, "Could not retreive link between user and place", err);
+    //                    else {
+    //                        console.log("retrieved records:");
+    //                        console.log(places);
+    //                        console.log("Sending this back to requester");
+    //                        res.json(places);
+    //                    }
+    //                });
+    //            }
+    //        });
+    //    }
+    //});
 
 });
 
@@ -492,7 +522,7 @@ router.post('/findMyPlacesNearby', function (req, res) {
                     console.log("FindMyPlacesNearby: Found " + location.name);
                     result.push(location);
                 });
-                console.log("FindMyPlacesNearby: Sending this back to requester");
+                //console.log("FindMyPlacesNearby: Sending this back to requester");
                 res.json(result);
             }
         } catch (e) {
