@@ -214,6 +214,7 @@ router.post('/buyPlace', function (req, res) {
                         console.log("BuyPlace: UserPlace well inserted");
                         //Substract price of wallet
                         db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.body.price) });
+                        res.json([{ "Code": "SAVED" }]);
                     }
                 }
             }
