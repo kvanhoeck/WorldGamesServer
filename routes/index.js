@@ -202,7 +202,7 @@ router.post('/buyPlace', function (req, res) {
                                 "icon": place.icon,
                                 "createdTS": new Date().getTime(),
                                 "lastCashedTS": new Date().getTime(),
-                                "lastCheckInTS" : new Date().getTime()
+                                "lastCheckInTS" : new Date().toISOString().slice(0, 10).replace(/-/g, "")
                             }];
                         db.getCollection('userPlace').insert(userPlace);
                         console.log("UserPlace well inserted");
