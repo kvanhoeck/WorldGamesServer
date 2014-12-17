@@ -161,7 +161,7 @@ router.post('/setUser', function (req, res) {
 });
 
 router.post('/buyPlace', function (req, res) {
-    console.log("buyPlace POST");
+    console.log("BuyPlace: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
@@ -173,22 +173,25 @@ router.post('/buyPlace', function (req, res) {
             
             var user = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
             //old code: db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
-            var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.lat, "geometry.location.lng": req.body.lng });
-            var userPlace = db.getCollection("userPlace").findOne({ "userId": new BSON.ObjectID(req.body.userId), "placeId": req.body.placeId, "placeType": req.body.placeType });
+            var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.lat, "geometry.location.lng": req.body.place.lng });
+            var userPlace = db.getCollection("userPlace").findOne({ "userId": new BSON.ObjectID(req.body.userId), "placeId": req.body.place.placeId, "placeType": req.body.placeType });
             
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "User is null");
-            else if (place == null)
-                throwError(res, 400, "Could not retreive Place", "Place is null");
+                throwError(res, 400, "Could not retreive User", "BuyPlace: User is null");
+            else if (place == null) {
+                console.log("BuyPlace: Place not found, saving place");
+                db.getCollection("place").insert(req.body.place);
+                place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.lat, "geometry.location.lng": req.body.place.lng });
+            }
             else if (userPlace !== null)
-                throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "User already owns this place");
+                throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "BuyPlace: User already owns this place");
             else {
                 var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
                 
                 if (wallet == null)
-                    throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+                    throwError(res, 400, "Could not retreive Wallet", "BuyPlace: Wallet is null");
                 else {
-                    if (wallet.amount < req.body.price) throwError(res, 400, "You do not have enough money to buy this place", "To little in wallet: " + wallet.amount + " < " + req.body.price);
+                    if (wallet.amount < req.body.price) throwError(res, 400, "You do not have enough money to buy this place", "BuyPlace: To little in wallet: " + wallet.amount + " < " + req.body.price);
                     else {
                         //Add place to user
                         var userPlace = [ {
@@ -205,7 +208,7 @@ router.post('/buyPlace', function (req, res) {
                                 "lastCheckInTS" : new Date().toISOString().slice(0, 10).replace(/-/g, "")
                             }];
                         db.getCollection('userPlace').insert(userPlace);
-                        console.log("UserPlace well inserted");
+                        console.log("BuyPlace: UserPlace well inserted");
                         //Substract price of wallet
                         db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (wallet.amount - req.body.price) });
                     }
@@ -213,8 +216,7 @@ router.post('/buyPlace', function (req, res) {
             }
         }
         catch (e) {
-            console.log("ERROR: " + e);
-            throwError(res, 400, "Woops: " + e, e);
+            throwError(res, 400, "Woops: " + e, "BuyPlace: ERROR: " + e);
         }
     }).run();
 });
