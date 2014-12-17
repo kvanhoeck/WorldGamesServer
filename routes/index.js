@@ -227,12 +227,21 @@ router.post('/getMyWorld', function (req, res) {
         try {
             var db = getDB();
             var jsonBody = JSON.stringify(req.body);
+            var jsonBody2 = JSON.stringify(req.body[0]);
             var mongo = require('mongodb');
             var BSON = mongo.BSONPure;
             
             console.log("GetMyWorld: Searching user '" + req.body.userId + "'");
             var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            var user_ = db.getCollection("user").findOne({ "_id.$oid": jsonBody2.userId });
+            var user2 = db.getCollection("user").findOne({ "_id.$oid": req.body.userId });
+            var user3 = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
+            var user4 = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body[0].userId) });
             console.log("GetMyWorld: User found: " + user.firstName + " '" + user._id.$iod + "'");
+            console.log("GetMyWorld: User_ found: " + user_.firstName);
+            console.log("GetMyWorld: User2 found: " + user2.firstName);
+            console.log("GetMyWorld: User3 found: " + user3.firstName);
+            console.log("GetMyWorld: User4 found: " + user4.firstName);
             //old code: db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
             var userPlaces = db.getCollection("userPlace").find({ "userId.$oid": req.body.userId });
             
