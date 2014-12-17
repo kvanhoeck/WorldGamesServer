@@ -6,9 +6,9 @@ var Fiber = require('fibers');
 var MongoSync = require("mongo-sync");
 var BSON = require('mongodb').BSONPure;
                 
-function throwError(res, code, message, error) {
-    console.log("ERROR: " + message);
-    console.log("More info: " + error);
+function throwError(res, code, caller, message, error) {
+    console.log(caller + " ERROR: " + message);
+    console.log(caller + " More info: " + error);
     res.status(code);
     res.send(message);
 }
@@ -60,7 +60,7 @@ router.get('/getAllPlaces', function (req, res) {
 });
 
 router.post('/setPlace', function (req, res) {
-    console.log("setPlace POST");
+    console.log("SetPlace: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
@@ -69,32 +69,32 @@ router.post('/setPlace', function (req, res) {
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
         if (err) throwError(res, 400, "Could not connect to the database", err);
         else {
-            console.log("Connected to MongoDB");
+            console.log("SetPlace: Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
                 if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
                 else {
-                    console.log("Authenticated to MongoDB");
+                    console.log("SetPlace: Authenticated to MongoDB");
                     
                     //Check if already added, do this by Latitude and Longitude
-                    console.log("Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
+                    console.log("SetPlace: Searching for " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng);
                     db.collection("place").findOne({ "geometry.location.lat": req.body.geometry.location.lat, 'geometry.location.lng': req.body.geometry.location.lng }, function (err, places) {
                         //collection.find().toArray(function (err, places) {
-                        if (err) throwError(res, 400, "Could not retreive Place", err);
+                        if (err) throwError(res, 400, "SetPlace", "Could not retreive Place", err);
                         else {
-                            console.log("retrieved records:");
+                            console.log("SetPlace: retrieved records:");
                             console.log(places);
                             if (places === null) {
                                 db.collection('place').insert(req.body, function (err, inserted) {
-                                    if (err) throwError(res, 400, "Could not insert new Place", err);
+                                    if (err) throwError(res, 400, "SetPlace", "Could not insert new Place", err);
                                     else {
-                                        console.log("Place well inserted");
+                                        console.log("SetPlace: Place well inserted");
                                         res.json([{ "Code": "SAVED" }]);
                                     }
                                 });
                             }
                             else {
-                                console.log("Place " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng + " already exists: " + places.name);
+                                console.log("SetPlace: Place " + req.body.geometry.location.lat + " , " + req.body.geometry.location.lng + " already exists: " + places.name);
                                 res.json([{ "Code": "EXISTS" }]);
                             }
                         }
@@ -106,41 +106,41 @@ router.post('/setPlace', function (req, res) {
 });
 
 router.post('/setUser', function (req, res) {
-    console.log("setUser POST");
+    console.log("SetUser: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
     
     MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-        if (err) throwError(res, 400, "Could not connect to the database", err);
+        if (err) throwError(res, 400, "SetUser", "Could not connect to the database", err);
         else {
-            console.log("Connected to MongoDB");
+            console.log("SetUser: Connected to MongoDB");
             //Authenticate after connecting
             db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
                 if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
                 else {
-                    console.log("Authenticated to MongoDB");
+                    console.log("SetUser: Authenticated to MongoDB");
                     
                     //Check if already added, do this by Latitude and Longitude
                     db.collection("user").findOne({ "email": req.body.email}, function (err, user) {
                         //collection.find().toArray(function (err, places) {
-                        if (err) throwError(res, 400, "Could not retreive User", err);
+                        if (err) throwError(res, 400, "SetUser", "Could not retreive User", err);
                         else if (user == null) {
                             //Add user to DB
                             db.collection('user').insert(req.body, function (err, inserted) {
-                                if (err) throwError(res, 400, "Could not insert new User", err);
+                                if (err) throwError(res, 400, "SetUser", "Could not insert new User", err);
                                 else {
-                                    console.log("User well inserted");
+                                    console.log("SetUser: User well inserted");
                                     //Give user start wallet
                                     db.collection('user').findOne({ "email": req.body.email }, function (err, user) {
-                                        if (err) throwError(res, 400, "Could not retreive User", err);
-                                        else if (user == null) throwError(res, 400, "Could not retreive User", "User has just been saved, but impossible to fetch");
+                                        if (err) throwError(res, 400, "SetUser", "Could not retreive User", err);
+                                        else if (user == null) throwError(res, 400, "SetUser", "Could not retreive User", "User has just been saved, but impossible to fetch");
                                         else {
                                             db.collection('wallet').insert({ "userId": user._id, "amount": 100000}, function (err, wallet) {
-                                                if (err) throwError(res, 400, "Could not insert new Wallet", err);
+                                                if (err) throwError(res, 400, "SetUser", "Could not insert new Wallet", err);
                                                 else {
-                                                    console.log("Wallet well inserted");
+                                                    console.log("SetUser: Wallet well inserted");
                                                     res.json([{ "Code": "SAVED" }]);
                                                 }
                                             });
@@ -182,17 +182,17 @@ router.post('/buyPlace', function (req, res) {
             }
 
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "BuyPlace: User is null");
+                throwError(res, 400, "BuyPlace", "Could not retreive User", "BuyPlace: User is null");
             else if (place == null) 
-                throwError(res, 400, "Could not retreive Place", "BuyPlace: Place is null");
+                throwError(res, 400, "BuyPlace", "Could not retreive Place", "BuyPlace: Place is null");
             else if (userPlace !== null)
-                throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "BuyPlace: User already owns this place");
+                throwError(res, 400, "BuyPlace", "You already bought this place for " + userPlace.price + "€", "BuyPlace: User already owns this place");
             else {
                 console.log("BuyPlace: Really buying this place ...");
                 var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
                 
                 if (wallet == null)
-                    throwError(res, 400, "Could not retreive Wallet", "BuyPlace: Wallet is null");
+                    throwError(res, 400, "BuyPlace", "Could not retreive Wallet", "BuyPlace: Wallet is null");
                 else {
                     if (wallet.amount < req.body.price) throwError(res, 400, "You do not have enough money to buy this place", "BuyPlace: To little in wallet: " + wallet.amount + " < " + req.body.price);
                     else {
@@ -220,13 +220,13 @@ router.post('/buyPlace', function (req, res) {
             }
         }
         catch (e) {
-            throwError(res, 400, "Woops: " + e, "BuyPlace: ERROR: " + e);
+            throwError(res, 400, "BuyPlace", "Woops: " + e, "BuyPlace: ERROR: " + e);
         }
     }).run();
 });
 
 router.post('/getMyWorld', function (req, res) {
-    console.log("getMyWorld POST");
+    console.log("GetMyWorld: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
@@ -241,9 +241,9 @@ router.post('/getMyWorld', function (req, res) {
             var userPlaces = db.getCollection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) });
             
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "User is null");
+                throwError(res, 400, "GetMyWorld", "Could not retreive User", "User is null");
             else if (userPlaces == null)
-                throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
+                throwError(res, 400, "GetMyWorld", "Could not retreive link between User and Place", "UserPlace is null");
             else {
                 var result = [];
                 userPlaces.forEach(function (up) {
@@ -253,14 +253,13 @@ router.post('/getMyWorld', function (req, res) {
                 res.json(result);
             }
         } catch (e) {
-            console.log("ERROR: " + e);
-            throwError(res, 400, "Woops: " + e, e);
+            throwError(res, 400, "GetMyWorld", "Woops: " + e, e);
         }
     }).run();
 });
 
 router.post('/getMyCapital', function (req, res) {
-    console.log("getMyCapital POST");
+    console.log("GetMyCapital: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
@@ -274,28 +273,24 @@ router.post('/getMyCapital', function (req, res) {
             var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
 
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "User is null");
+                throwError(res, 400, "GetMyCapital", "Could not retreive User", "User is null");
             else if (wallet == null)
-                throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+                throwError(res, 400, "GetMyCapital", "Could not retreive Wallet", "Wallet is null");
             else {
                 res.json(wallet);
             }
         } catch (e) {
-            console.log("ERROR: " + e);
-            throwError(res, 400, "Woops: " + e, e);
+            throwError(res, 400, "GetMyCapital", "Woops: " + e, e);
         }
     }).run();    
 });
 
 router.post('/cashPlace', function (req, res) {
-    console.log("cashPlace POST");
+    console.log("CashPlace: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
-    
-    var Fiber = require('fibers');
-    var MongoSync = require("mongo-sync");
     
     Fiber(function () {
         try {
@@ -306,18 +301,17 @@ router.post('/cashPlace', function (req, res) {
             var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
             
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "User is null");
+                throwError(res, 400, "CashPlace", "Could not retreive User", "User is null");
             else if (userPlace == null)
-                throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
+                throwError(res, 400, "CashPlace", "Could not retreive link between User and Place", "UserPlace is null");
             else if (wallet == null)
-                throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+                throwError(res, 400, "CashPlace", "Could not retreive Wallet", "Wallet is null");
             else {
                 var now = new Date();
                 var seconds = ((now.getTime() - userPlace.lastCashedTS) * .001) >> 0;
-                console.log("Last cashed TS was " + seconds + " seconds ago");
+                console.log("CashPlace: Last cashed TS was " + seconds + " seconds ago");
                 var profit = userPlace.price / 2592000 * seconds;
-                console.log("Provit is " + profit);
-                console.log("Provit is " + profit.toFixed(4));
+                console.log("CashPlace : Provit is " + profit + " reducing to " + profit.toFixed(4));
                 
                 //Save profit to wallet
                 db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: (parseInt(wallet.amount) + parseInt(profit.toFixed(4))) });
@@ -339,21 +333,17 @@ router.post('/cashPlace', function (req, res) {
                 res.json([{ "Code": "SAVED", "Message": "Cashed €" + profit.toFixed(4) }]);
             }
         } catch (e) {
-            console.log("ERROR: " + e);
-            throwError(res, 400, "Woops: " + e, e);
+            throwError(res, 400, "CashPlace", "Woops: " + e, e);
         }
     }).run();
 });
 
 router.post('/checkInPlace', function (req, res) {
-    console.log("cashPlace POST");
+    console.log("CheckInPlace: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
-    
-    var Fiber = require('fibers');
-    var MongoSync = require("mongo-sync");
     
     Fiber(function () {
         try {
@@ -364,11 +354,11 @@ router.post('/checkInPlace', function (req, res) {
             var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
             
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "User is null");
+                throwError(res, 400, "CheckInPlace", "Could not retreive User", "User is null");
             else if (userPlace == null)
-                throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
+                throwError(res, 400, "CheckInPlace", "Could not retreive link between User and Place", "UserPlace is null");
             else if (wallet == null)
-                throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+                throwError(res, 400, "CheckInPlace", "Could not retreive Wallet", "Wallet is null");
             else {
                 var oneDay = 24 * 60 * 60 * 1000;
                 var now = new Date();
@@ -401,25 +391,21 @@ router.post('/checkInPlace', function (req, res) {
                     res.json([{ "Code": "SAVED", "Message": "Cashed €" + profit.toFixed(4) }]);
                 }
                 else {
-                    throwError(res, 400, "Already checked in today!", "Already checked in today!");
+                    throwError(res, 400, "CheckInPlace", "Already checked in today!", "Already checked in today!");
                 }
             }
         } catch (e) {
-            console.log("CheckInPlace: ERROR: " + e);
-            throwError(res, 400, "Woops: " + e, e);
+            throwError(res, 400, "CheckInPlace", "Woops: " + e, e);
         }
     }).run();
 });
 
 router.post('/resetWallet', function (req, res) {
-    console.log("resetWallet POST");
+    console.log("ResetWallet: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
-    
-    var Fiber = require('fibers');
-    var MongoSync = require("mongo-sync");
     
     Fiber(function () {
         try {
@@ -429,31 +415,26 @@ router.post('/resetWallet', function (req, res) {
             var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
             
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "User is null");
+                throwError(res, 400, "ResetWallet", "Could not retreive User", "User is null");
             else if (wallet == null)
-                throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
+                throwError(res, 400, "ResetWallet", "Could not retreive Wallet", "Wallet is null");
             else {
                 db.getCollection("wallet").update({ _id : wallet._id }, { userId: wallet.userId, amount: parseInt(req.body.resetValue) });
                 
                 res.json([{ "Code": "SAVED" }]);
             }
         } catch (e) {
-            console.log("ERROR: " + e);
-            throwError(res, 400, "Woops: " + e, e);
+            throwError(res, 400, "ResetWallet", "Woops: " + e, e);
         }
     }).run();
 });
 
 router.post('/findMyPlacesNearby', function (req, res) {
-    console.log("findMyPlacesNearby POST");
+    console.log("FindMyPlacesNearby: POST");
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST");
     // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
     // Domain Request
-    
-    var Fiber = require('fibers');
-    var MongoSync = require("mongo-sync");
-    
     
     Fiber(function () {
         try {
@@ -462,9 +443,8 @@ router.post('/findMyPlacesNearby', function (req, res) {
             var user = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
             
             if (user == null)
-                throwError(res, 400, "Could not retreive User", "User is null");
+                throwError(res, 400, "FindMyPlacesNearby", "Could not retreive User", "User is null");
             else {
-                //console.log("FindMyPlacesNearby: Received JSON " + jsonBody);
                 console.log("FindMyPlacesNearby: Searching places between " + (parseFloat(req.body.lat) - 0.01) + " and " + (parseFloat(req.body.lat) + 0.01));
                 console.log("FindMyPlacesNearby: Searching places between " + (parseFloat(req.body.lng) - 0.01) + " and " + (parseFloat(req.body.lng) + 0.01));
                 var myLocations = db.getCollection("userPlace").find(
@@ -481,12 +461,48 @@ router.post('/findMyPlacesNearby', function (req, res) {
                     console.log("FindMyPlacesNearby: Found " + location.name);
                     result.push(location);
                 });
-                //console.log("FindMyPlacesNearby: Sending this back to requester");
                 res.json(result);
             }
         } catch (e) {
-            console.log("ERROR: " + e);
-            throwError(res, 400, "Woops: " + e, e);
+            throwError(res, 400, "FindMyPlacesNearby", "Woops: " + e, e);
+        }
+    }).run();
+});
+
+router.post('/findMyPlacesToLose', function (req, res) {
+    console.log("FindMyPlacesToLose: POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            
+            var user = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
+            
+            if (user == null)
+                throwError(res, 400, "FindMyPlacesToLose", "Could not retreive User", "User is null");
+            else {
+                var floorDate = new Date();
+                floorDate.setDate(floorDate.getDate() - 25);
+                floorDate = floorDate.toISOString().slice(0, 10).replace(/-/g, "")
+                var myLocations = db.getCollection("userPlace").find(
+                    {
+                        "$and": [   { "userId": new BSON.ObjectID(req.body.userId) },
+                                    { "lastCheckInTS": { "$lt": floorDate } }
+                        ]
+                    });
+                var result = [];
+                myLocations.forEach(function (location) {
+                    console.log("FindMyPlacesToLose: Found " + location.name);
+                    result.push(location);
+                });
+                res.json(result);
+            }
+        } catch (e) {
+            throwError(res, 400, "FindMyPlacesToLose", "Woops: " + e, e);
         }
     }).run();
 });
