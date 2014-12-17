@@ -430,7 +430,6 @@ router.post('/checkInPlace', function (req, res) {
     }).run();
 });
 
-
 router.post('/resetWallet', function (req, res) {
     console.log("resetWallet POST");
     res.header("Access-Control-Allow-Origin", "*");
@@ -489,7 +488,7 @@ router.post('/findMyPlacesNearby', function (req, res) {
                 console.log("FindMyPlacesNearby: Searching places between " + (parseFloat(req.body.lng) - 0.01) + " and " + (parseFloat(req.body.lng) + 0.01));
                 var myLocations = db.getCollection("userPlace").find(
                     {
-                        "$and": [   { "userId.$oid": req.body.userId },
+                        "$and": [   { "userId": new BSON.ObjectID(req.body.userId) },
                                     { "lat": { "$gt": (parseFloat(req.body.lat) - 0.01) } }, 
                                     { "lat": { "$lt": (parseFloat(req.body.lat) + 0.01) } },
                                     { "lng": { "$gt": (parseFloat(req.body.lng) - 0.01) } },
