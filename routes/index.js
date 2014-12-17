@@ -230,7 +230,9 @@ router.post('/getMyWorld', function (req, res) {
             var mongo = require('mongodb');
             var BSON = mongo.BSONPure;
             
+            console.log("GetMyWorld: Searching user '" + req.body.userId + "'");
             var user = db.getCollection("user").findOne({ "_id.$oid": jsonBody.userId });
+            console.log("GetMyWorld: User found: " + user.firstName + " '" + user._id.$iod + "'");
             //old code: db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
             var userPlaces = db.getCollection("userPlace").find({ "userId.$oid": req.body.userId });
             
