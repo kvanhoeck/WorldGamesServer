@@ -174,7 +174,7 @@ router.post('/buyPlace', function (req, res) {
             var user = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
             //old code: db.collection("userPlace").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, places) {
             var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.lat, "geometry.location.lng": req.body.place.lng });
-            var userPlace = db.getCollection("userPlace").findOne({ "userId": new BSON.ObjectID(req.body.userId), "placeId": req.body.place.placeId, "placeType": req.body.placeType });
+            var userPlace = db.getCollection("userPlace").findOne({ "userId": new BSON.ObjectID(req.body.userId), "placeId": req.body.place.place_id, "placeType": req.body.placeType });
             
             if (user == null)
                 throwError(res, 400, "Could not retreive User", "BuyPlace: User is null");
@@ -182,8 +182,8 @@ router.post('/buyPlace', function (req, res) {
                 console.log("BuyPlace: Place not found, saving place");
                 db.getCollection("place").insert(req.body.place);
                 console.log("BuyPlace: Looking up newly saved place ...");
-                console.log("BuyPlace: Looking up location " + req.body.place.lat + " - " + req.body.place.lng);
-                place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.lat, "geometry.location.lng": req.body.place.lng });
+                console.log("BuyPlace: Looking up location " + req.body.place.geometry.location.lat + " - " + req.body.place.geometry.location.lng);
+                place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.geometry.location.lat, "geometry.location.lng": req.body.place.geometry.location.lng });
                 console.log("BuyPlace: Place found: " + place);
             }
             else if (userPlace !== null)
