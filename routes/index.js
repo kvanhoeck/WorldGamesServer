@@ -181,11 +181,14 @@ router.post('/buyPlace', function (req, res) {
             else if (place == null) {
                 console.log("BuyPlace: Place not found, saving place");
                 db.getCollection("place").insert(req.body.place);
+                console.log("BuyPlace: Looking up newly saved place ...");
                 place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.lat, "geometry.location.lng": req.body.place.lng });
+                console.log("BuyPlace: Place found: " + place.name);
             }
             else if (userPlace !== null)
                 throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "BuyPlace: User already owns this place");
             else {
+                console.log("BuyPlace: Really buying this place ...");
                 var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
                 
                 if (wallet == null)
