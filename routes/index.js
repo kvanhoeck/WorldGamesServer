@@ -237,6 +237,8 @@ router.post('/getMyWorld', function (req, res) {
             else if (userPlaces == null)
                 throwError(res, 400, "Could not retreive link between User and Place", "UserPlace is null");
             else {
+                console.log("GetMyWorld: User found: " + user.length);
+                console.log("GetMyWorld: Places found: " + userPlaces.length);
                 var result = [];
                 userPlaces.forEach(function (up) {
                     console.log("GetMyWorld: Found " + up.name);
