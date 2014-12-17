@@ -172,7 +172,7 @@ router.post('/buyPlace', function (req, res) {
             var db = getDB();
             
             var user = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
-            var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.lat, "geometry.location.lng": req.body.place.lng });
+            var place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.geometry.location.lat, "geometry.location.lng": req.body.place.geometry.location.lng });
             var userPlace = db.getCollection("userPlace").findOne({ "userId": new BSON.ObjectID(req.body.userId), "placeId": req.body.place.place_id, "placeType": req.body.placeType });
             
             if (place == null) {
