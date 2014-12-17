@@ -182,8 +182,9 @@ router.post('/buyPlace', function (req, res) {
                 console.log("BuyPlace: Place not found, saving place");
                 db.getCollection("place").insert(req.body.place);
                 console.log("BuyPlace: Looking up newly saved place ...");
+                console.log("BuyPlace: Looking up location " + req.body.place.lat + " - " + req.body.place.lng);
                 place = db.getCollection("place").findOne({ "geometry.location.lat": req.body.place.lat, "geometry.location.lng": req.body.place.lng });
-                console.log("BuyPlace: Place found: " + place.name);
+                console.log("BuyPlace: Place found: " + place);
             }
             else if (userPlace !== null)
                 throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "BuyPlace: User already owns this place");
