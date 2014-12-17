@@ -183,7 +183,7 @@ router.post('/buyPlace', function (req, res) {
             else if (userPlace !== null)
                 throwError(res, 400, "You already bought this place for " + userPlace.price + "€", "User already owns this place");
             else {
-                var wallet = db.getCollection("wallet").findOne({ "userId.$oid": req.body.userId });
+                var wallet = db.getCollection("wallet").findOne({ "userId": new BSON.ObjectID(req.body.userId) });
                 
                 if (wallet == null)
                     throwError(res, 400, "Could not retreive Wallet", "Wallet is null");
@@ -278,32 +278,7 @@ router.post('/getMyCapital', function (req, res) {
             console.log("ERROR: " + e);
             throwError(res, 400, "Woops: " + e, e);
         }
-    }).run();
-
-    //MongoClient.connect("mongodb://ds055690.mongolab.com:55690/buytheworld", function (err, db) {
-    //    if (err) throwError(res, 400, "Could not connect to the database", err);
-    //    else {
-    //        console.log("Connected to MongoDB");
-    //        //Authenticate after connecting
-    //        db.authenticate('cognito_btw', 'G6rzc4dlr', function (authErr, success) {
-    //            if (authErr) throwError(res, 400, "Could not authenticate with the database", authErr);
-    //            else {
-    //                console.log("Authenticated to MongoDB");
-    //                console.log("Searching for " + req.body.userId);
-                    
-    //                db.collection("wallet").find({ "userId": new BSON.ObjectID(req.body.userId) }).toArray(function (err, wallet) {
-    //                    if (err) throwError(res, 400, "Could not retreive Wallet", err);
-    //                    else {
-    //                        console.log("retrieved records:");
-    //                        console.log(wallet);
-    //                        console.log("Sending this back to requester");
-    //                        res.json(wallet);
-    //                    }
-    //                });
-    //            }
-    //        });
-    //    }
-    //});    
+    }).run();    
 });
 
 router.post('/cashPlace', function (req, res) {
