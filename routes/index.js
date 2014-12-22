@@ -503,6 +503,7 @@ router.post('/findMyPlacesToLose', function (req, res) {
                 res.json(result);
 
                 //Check new places to lose
+                floorDate = new Date();
                 floorDate.setDate(floorDate.getDate() - 20);
                 floorDate = floorDate.toISOString().slice(0, 10).replace(/-/g, "")
                 var myLocations = db.getCollection("userPlace").find(
