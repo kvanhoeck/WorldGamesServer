@@ -500,7 +500,6 @@ router.post('/findMyPlacesToLose', function (req, res) {
                     db.getCollection("userPlace").remove(   {   "_id": new BSON.ObjectID(location._id) } );
                     console.log("FindMyPlacesToLose: Last checkin to long ago: " + location.lastCheckInTS + ". Removed " + location.name);
                 });
-                res.json(result);
 
                 //Check new places to lose
                 floorDate = new Date();
@@ -521,6 +520,31 @@ router.post('/findMyPlacesToLose', function (req, res) {
             }
         } catch (e) {
             throwError(res, 400, "FindMyPlacesToLose", "Woops: " + e, e);
+        }
+    }).run();
+});
+
+router.post('/findMyPlacesTypes', function (req, res) {
+    console.log("FindMyPlacesTypes: POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            
+            var user = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
+            
+            if (user == null)
+                throwError(res, 400, "FindMyPlacesTypes", "Could not retreive User", "User is null");
+            else {
+                var myLocations = db.runCommand({ "distinct": "userPlace", key: "placeType", query: { "userId": new BSON.ObjectID(req.body.userId) } });
+                res.json(myLocations.values);
+            }
+        } catch (e) {
+            throwError(res, 400, "FindMyPlacesTypes", "Woops: " + e, e);
         }
     }).run();
 });
