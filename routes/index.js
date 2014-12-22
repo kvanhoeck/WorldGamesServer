@@ -486,7 +486,24 @@ router.post('/findMyPlacesToLose', function (req, res) {
                 throwError(res, 400, "FindMyPlacesToLose", "Could not retreive User", "User is null");
             else {
                 var floorDate = new Date();
-                floorDate.setDate(floorDate.getDate() - 25);
+                floorDate.setDate(floorDate.getDate() - 30);
+                floorDate = floorDate.toISOString().slice(0, 10).replace(/-/g, "")
+                //First remove userPlaces that had to been lost
+                var myLocations = db.getCollection("userPlace").find(
+                    {
+                        "$and": [   { "userId": new BSON.ObjectID(req.body.userId) },
+                                    { "lastCheckInTS": { "$lt": floorDate } }
+                        ]
+                    });
+                var result = [];
+                myLocations.forEach(function (location) {
+                    db.getCollection("userPlace").remove(   {   "_id": new BSON.ObjectID(location._id) } );
+                    console.log("FindMyPlacesToLose: Last checkin to long ago: " + location.lastCheckInTS + ". Removed " + location.name);
+                });
+                res.json(result);
+
+                //Check new places to lose
+                floorDate.setDate(floorDate.getDate() - 20);
                 floorDate = floorDate.toISOString().slice(0, 10).replace(/-/g, "")
                 var myLocations = db.getCollection("userPlace").find(
                     {
