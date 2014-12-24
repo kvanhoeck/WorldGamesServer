@@ -549,6 +549,46 @@ router.post('/findMyPlacesTypes', function (req, res) {
     }).run();
 });
 
+
+router.post('/findMyStreets', function (req, res) {
+    console.log("FindMyStreets: POST");
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST");
+    // The above 2 lines are required for Cross Domain Communication(Allowing the methods that come as Cross 
+    // Domain Request
+    
+    Fiber(function () {
+        try {
+            var db = getDB();
+            
+            var user = db.getCollection("user").findOne({ "_id": new BSON.ObjectID(req.body.userId) });
+            
+            if (user == null)
+                throwError(res, 400, "FindMyStreets", "Could not retreive User", "User is null");
+            else {
+                var result = [];
+                var places = db.runCommand(
+                    {
+                        "aggregate": "userPlace", pipeline: [
+                            {
+                                //$match: { "userId": new BSON.ObjectID(req.body.userId) },
+                                $group: {
+                                    _id: "$placeType",
+                                    count: { $sum: 1 }
+                                }
+                            }
+                        ]
+                    });
+                
+                result.push(places);
+                res.json(result);
+            }
+        } catch (e) {
+            throwError(res, 400, "FindMyStreets", "Woops: " + e, e);
+        }
+    }).run();
+});
+
 router.post('/getPrice', function (req, res) {
     console.log("getPrice POST");
     res.header("Access-Control-Allow-Origin", "*");
